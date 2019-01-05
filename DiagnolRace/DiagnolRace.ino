@@ -50,17 +50,17 @@ void loop() {
   //rainbow(20);
   //rainbowCycle(20);
   //theaterChaseRainbow(50);
-
-  DrawPixelMatrix(row, col, strip.Color(0, 0, 0));
+  DiagonalFader(row, col, strip.Color(0, 0, 255), 6, 10);
   row++;
   col++;
   if (row >= rows) {
     row = 0;
+    col -= (rows-1);
   }
   if (col >= leds) {
-    col = 0;
+    col -= (row-1);
+    row = 0;
   }
-  DrawPixelMatrix(row, col, strip.Color(0, 0, 255));
 }
 
 // Fill the dots one after the other with a color
@@ -149,13 +149,57 @@ uint32_t Wheel(byte WheelPos) {
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-uint16_t TransformMatrix(uint16_t row, uint16_t col) {
-  // 0,0 is bottom left
-  return col + row*leds;
+uint16_t Wrap(uint16_t n, uint16_t len) {
+  return ((n % len) + len) % len;
 }
 
-void DrawPixelMatrix(uint16_t row, uint16_t col, uint32_t c) {
+uint16_t TransformMatrix(uint16_t row, uint16_t col) {
+  // 0,0 is bottom left
+  //row = Wrap(row,rows);
+  //col = Wrap(col,leds);
+  uint16_t ColAdder;
+  if (row%2 == 1) {
+    ColAdder = leds-col-1;
+  }
+  else {
+    ColAdder = col;
+  }
+  return row*leds + ColAdder;
+}
+
+void SetPixelMatrix(uint16_t row, uint16_t col, uint32_t c) {
   uint16_t i = TransformMatrix(row, col);
   strip.setPixelColor(i, c);
-  strip.show();
 }
+
+void DiagonalFader(uint16_t row, uint16_t col, uint32_t c, uint8_t len, uint8_t wait) {
+  for (int n = 0; n < len*2; n++) {
+    uint32_t brightness, setrow, setcol;
+    if (n==0) {
+      brightness = 0;
+    }
+    else {
+      brightness = 1;
+    }
+    setrow = row+n;
+    setcol = col+n;
+    
+    Serial.print("r1 ");
+    Serial.println(setrow);
+    Serial.print("c1 ");
+    Serial.println(setcol);
+
+    setcol = (setcol - (setrow/rows)*(rows-1)) % leds;
+    setrow = setrow % rows;
+
+    Serial.print("r2 ");
+    Serial.println(setrow);
+    Serial.print("c2 ");
+    Serial.println(setcol);
+    
+    SetPixelMatrix(setrow, setcol, strip.Color(0, 0, 255*brightness));
+  }
+  strip.show();
+  delay(wait);
+}
+
