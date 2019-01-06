@@ -1,0 +1,38 @@
+#circleFromPython# -- main feather area 
+  Feather m0 
+  x86 or x64 
+  RX from serial and input into struct
+  uses struct to control circle like program
+
+#leapController# -- main leap area
+  x86 or x64
+
+#circle#
+  made by gavin
+  Feather m0
+  displays random circles on led grid
+
+#DiagonalRace#
+  feather m0
+  made by gavin
+  races diagnol lines across the matrix
+
+#echo#
+  feather m0
+  simple echo testing program
+
+#leap_finger_pub#
+  made by dan and mike
+  RX from leap and print to screen
+  RX from feather and print to screen
+
+#pyserialTesting#
+  TX to arduino using structs and headers
+
+#strandTest#
+  Feather m0
+  experimental area for early circle development
+
+#structMessage#
+  Feather m0
+  x86 x64

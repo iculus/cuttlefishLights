@@ -11,14 +11,6 @@ uint16_t row = 0;
 uint16_t col = 0;
 uint16_t sz = 0;
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(leds*rows, PIN, NEO_RGB + NEO_KHZ800);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
@@ -28,12 +20,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(leds*rows, PIN, NEO_RGB + NEO_KHZ800
 
 void setup() {
   Serial.begin(9600);
-  // This is for Trinket 5V 16MHz, you can remove these three lines if you are not using a Trinket
-  #if defined (__AVR_ATtiny85__)
-    if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
-  #endif
-  // End of trinket special code
-
+  
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
@@ -42,10 +29,10 @@ int incomingByte = 0;    // for incoming serial data
 int a = 0;
 
 struct Message1 {
-  uint8_t a;
-  uint8_t b;
-  uint8_t c;
-  uint8_t d;
+  uint8_t a; //rows
+  uint8_t b; //cols
+  uint8_t c; //color
+  uint8_t d; //brightness
 } __packed__;
 static const size_t MSG_LEN = sizeof(struct Message1);
 
@@ -73,9 +60,7 @@ void loop() {
       if (incomingByte == 254) {
         //process message
         memcpy(&msg1, payload, sizeof(msg1));
-
         handleMessage(msg1);
-        
         num_payload_chars = MSG_LEN + 1;
       } else {
         num_payload_chars = MSG_LEN + 1;  // invalid packet, drop data
@@ -95,7 +80,8 @@ void handleMessage(struct Message1 msg1){
 
   //row = random(0,rows);
   //col = random(0,leds);
-  sz = random(1,4+1);
+  //sz = random(1,4+1);
+  sz = 1;
   row = int(msg1.a);
   col = int(msg1.b);
 
@@ -250,7 +236,10 @@ void DiagonalFader(uint16_t row, uint16_t col, uint32_t c, uint8_t len, uint8_t 
 
 #define ARRAY_LEN(a)    (sizeof(a) / sizeof(a[0]))
 
-void DrawCircle(uint16_t row, uint16_t col, uint32_t c, uint8_t wait, uint16_t condition) {
+uint32_t RED = strip.Color(255,0,0);
+uint32_t YELLOW = strip.Color(255,255,0);
+
+void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t condition) {
   static int xx4[] = {-3,-3,-2,-1,0,1,2,3,3,3,2,1,0,-1,-2,-3};
   static int yy4[] = {0,1,2,3,3,3,2,1,0,-1,-2,-3,-3,-3,-2,-1};
   static int xx3[] = {-1,0,1,2,2,2,1,0,-1,-2,-2,-2};
@@ -264,7 +253,8 @@ void DrawCircle(uint16_t row, uint16_t col, uint32_t c, uint8_t wait, uint16_t c
     if (condition >= 4) {addressShape(xx4,yy4,row,col,ARRAY_LEN(xx4),strip.Color(0,1*(50-abs(50-b)),1*(50-abs(50-b))));}
     if (condition >= 3) {addressShape(xx3,yy3,row,col,ARRAY_LEN(xx3),strip.Color(0,0,2*(50-abs(50-b))));}
     if (condition >= 2) {addressShape(xx2,yy2,row,col,ARRAY_LEN(xx2),strip.Color(0,1*(50-abs(50-b)),0));}
-    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),strip.Color(4*(50-abs(50-b)),4*(50-abs(50-b)),0));}
+    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),YELLOW);}
+    strip.setBrightness( 255/50 * (50-abs(50-b)) ); //sets the triangle
     strip.show();
     delay(wait);
   }
