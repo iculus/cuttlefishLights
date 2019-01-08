@@ -23,7 +23,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(leds*rows, PIN, NEO_RGB + NEO_KHZ800
 
 
 
-const int numReadings = 10;
+const int numReadings = 6;
 int readings[numReadings];
 int readIndex = 0;
 int total = 0;
@@ -69,14 +69,18 @@ void loop() {
   average = total/numReadings;
   Serial.println(average);
 
-  if (average > 100){
+  bool demo = false;
+  if (average > 100){demo = true;}
+  if (average <= 100){demo = false;}
+
+  if (demo){
     row = random(0,rows);
     col = random(0,leds);
     sz = random(1,4+1);
     DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
   }
 
-  else if(average <=100){
+  else if(not demo){
     // send data only when you receive data:
     if (Serial.available() > 0) {
       incomingByte = Serial.read();
