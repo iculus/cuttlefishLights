@@ -2,10 +2,11 @@
 
 import os, sys, inspect, thread, time, random, struct
 		
-LIB_DIR = "/home/mike/Desktop/LeapDeveloperKit_2.3.1+31549_linux/LeapSDK/lib"
+LIB_DIR = "/home/admin/Desktop/LeapDeveloperKit_2.3.1+31549_linux/LeapSDK/lib"
 
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-arch_dir = '/x64' if sys.maxsize > 2**32 else '/x86'
+arch_dir = '/x64'
+#if sys.maxsize > 2**32 else '/x86'
 
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, LIB_DIR + arch_dir)))
 
@@ -31,6 +32,7 @@ M0ZMax = 0
 
 fingerListLeft = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
 fingerListRight = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
+
 def resetFings():
 	allFings = [(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1)]
 	return allFings
@@ -49,8 +51,12 @@ class SampleListener(Leap.Listener):
 		
 	def on_focus_gained(self, controller):
 		print "Focused"
+	
+	def on_service_disconnect(self, controller):
+		print "Ass ass ass"
 
 	def on_frame(self, controller):
+		pixelRow = pixelCol = 0
 		frame = controller.frame() 
 		extended_fingers = frame.fingers.extended()
 		hands = frame.hands
@@ -85,11 +91,26 @@ class SampleListener(Leap.Listener):
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)			
 		
 		simulator = resetSim()
+		simulator2 = resetSim2()
+
 		if numFing !=0:
 			for fingDex, thisFing in enumerate(allFings):
+				'''
 				if thisFing[1]<22 and thisFing[1]>=0 and thisFing[0]<11 and thisFing[0]>=0:
 					simulator[thisFing[1]][thisFing[0]] = fingDex+1
-			print '\n\n\n\n', simulator
+				elif thisFing[1]>= 22: print "condition"
+				'''
+				if thisFing[1] < 22 and thisFing[1] >= 0: pixelRow = thisFing[1]
+				if thisFing[1] >= 22: pixelRow = 21
+				if thisFing[1] < 0: pass
+				if thisFing[0] < 11 and thisFing[0] >= 0: pixelCol = thisFing[0]
+				if thisFing[0] >= 11: pixelCol = 10
+				if thisFing[0] < 0: pass
+
+				simulator[pixelRow][pixelCol] = fingDex+1
+				simulator2[pixelRow][pixelCol] = fingDex+1
+
+			print '\n\n\n\n', simulator2
 			toSend = simulator.T
 			toSend = toSend.reshape(242)
 			

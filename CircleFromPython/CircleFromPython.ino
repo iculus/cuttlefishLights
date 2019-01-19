@@ -3,10 +3,11 @@
   #include <avr/power.h>
 #endif
 
-#define PIN 12
+#define PIN 6
 #define leds 22
 #define rows 11
-#define ultrasonic A0
+#define ultrasonic A1
+#define slider A0
 
 uint16_t row = 0;
 uint16_t col = 0;
@@ -15,11 +16,6 @@ uint16_t finger = 0;
 uint8_t numFingers = 0;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(leds*rows, PIN, NEO_RGB + NEO_KHZ800);
-
-// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
-// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
-// and minimize distance between Arduino and first pixel.  Avoid connecting
-// on a live circuit...if you must, connect GND first.
 
 const int numReadings = 6;
 int readings[numReadings];
@@ -314,7 +310,8 @@ void loop() {
   if (average > threshold )    {closeToIt = false;}
   if (average <= threshold )   {closeToIt = true;}
 
-  bool condition = serAvail;
+  //bool condition = serAvail;
+  bool condition = true;
 
   if (condition) {
     incomingByte = Serial.read();
@@ -364,7 +361,7 @@ void loop() {
                  */
 
     
-    //DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
+    DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
     //DrawLines( seq, seqLen, strip.Color(0,0,255), 40); //onOff vals, len, color, brightness
   }
 }
@@ -456,7 +453,7 @@ void handleMessage(struct Message1 msg1){
   DrawLines( seq, seqLen, strip.Color(0,0,255), 40, numFing); //onOff vals, len, color, brightness
 
 }
-/*
+
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
@@ -496,6 +493,7 @@ void SetPixelMatrix(uint16_t row, uint16_t col, uint32_t c) {
 }
 
 #define ARRAY_LEN(a)    (sizeof(a) / sizeof(a[0]))
+/*
 uint32_t RED = strip.Color(0,255,0);
 uint32_t ORANGE = strip.Color(100,255,0);
 uint32_t YELLOW = strip.Color(255,255,0);
@@ -506,8 +504,9 @@ uint32_t FUCHA = strip.Color(0,255,100);
 uint32_t PURPLE = strip.Color(0,170,255);
 uint32_t WHITE = strip.Color(255,255,255);
 uint32_t OFF = strip.Color(0,0,0);
+*/
 
-uint32_t thisColor;
+//uint32_t thisColor;
 
 void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t condition) {
   static int xx4[] = {-3,-3,-2,-1,0,1,2,3,3,3,2,1,0,-1,-2,-3};
@@ -562,5 +561,3 @@ void addressShape(int* xArray, int* yArray, uint16_t thisrow, uint16_t thiscol, 
     }
   }
 }
-
-*/
