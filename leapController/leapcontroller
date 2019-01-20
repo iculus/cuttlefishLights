@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+
 import os, signal, sys, inspect, thread, time, random, struct
 import launchLeapd
 		
@@ -14,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(src_dir, LIB_DIR + arch_dir)))
 sys.path.insert(0, LIB_DIR)
 
 import Leap 
-from numpy import interp, zeros, chararray, reshape, append
+from numpy import interp, zeros, chararray, reshape, append, array
 
 LeapRowMin = -140
 LeapRowMax = 140
@@ -29,10 +30,20 @@ LeapZMax = 50
 M0ZMin = 100
 M0ZMax = 0
 
+start = chr(255)
+end = chr(254)
+
 pidList = []
 
 fingerListLeft = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
 fingerListRight = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
+
+def set_procname(newname):
+	from ctypes import cdll, byref, create_string_buffer
+	libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
+	buff = create_string_buffer(len(newname)+1) #Note: One larger than the name (man prctl says that)
+	buff.value = newname                 #Null terminated string as it should be
+	libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
 
 def resetFings():
 	allFings = [(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1)]
@@ -64,7 +75,7 @@ class SampleListener(Leap.Listener):
 		print "Disconnected"		
 	
 	def on_exit(self, controller):
-		launchLeapd.killProcess()
+		launchLeapd.killProcess('leapd')
 		print "Exited"
 
 	def on_focus_gained(self, controller):
@@ -89,6 +100,11 @@ class SampleListener(Leap.Listener):
 	def on_service_connect(self, controller):
 		print "Connection Gained"
 		
+	
+	def on_frame(self, controller):
+		simulator = resetSim()
+		simulator2 = resetSim2()
+		pixelRow = pixelCol = 0
 		frame = controller.frame() 
 		extended_fingers = frame.fingers.extended()
 		hands = frame.hands
@@ -110,25 +126,22 @@ class SampleListener(Leap.Listener):
 				f.stabilized_tip_position[1],LeapColMin,LeapColMax,M0ColMin,M0ColMax)
 			thisZ = returnCalibratedPosition(
 				f.stabilized_tip_position[2],LeapZMin,LeapZMax,M0ZMin,M0ZMax)
-			'''
-			if f.hand.is_left:
-				fingerListLeft[f.type] = (thisRow,thisCol,thisZ)
-			if f.hand.is_right:
-				fingerListRight[f.type] = (thisRow,thisCol,thisZ)
-			'''
+		
 			
 			if f.hand.is_left:
 				allFings[f.type] = (thisRow,thisCol,thisZ)
 			if f.hand.is_right:
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)			
 		
+				
 
 		if numFing !=0:
 			for fingDex, thisFing in enumerate(allFings):
-				'''
+				
 				if thisFing[1]<22 and thisFing[1]>=0 and thisFing[0]<11 and thisFing[0]>=0:
 					simulator[thisFing[1]][thisFing[0]] = fingDex+1
-				elif thisFing[1]>= 22: print "condition"
+				elif thisFing[1]>= 22: print "condition 22"
+				elif thisFing[0]>= 11: print "condition 11"
 				'''
 				if thisFing[1] < 22 and thisFing[1] >= 0: pixelRow = thisFing[1]
 				if thisFing[1] >= 22: pixelRow = 21
@@ -136,20 +149,44 @@ class SampleListener(Leap.Listener):
 				if thisFing[0] < 11 and thisFing[0] >= 0: pixelCol = thisFing[0]
 				if thisFing[0] >= 11: pixelCol = 10
 				if thisFing[0] < 0: pass
-
+				'''
 				simulator[pixelRow][pixelCol] = fingDex+1
 				simulator2[pixelRow][pixelCol] = fingDex+1
 
-			print '\n\n\n\n', simulator2
-			toSend = simulator.T
+
+			simulator3 = array([	[0,0,0,0,0,0,0,0,0,0,0],
+						[0,1,0,0,0,0,0,0,0,0,0],
+						[0,0,2,0,0,0,0,0,0,0,0],
+						[0,0,0,3,0,0,0,0,0,0,0],
+						[0,0,0,0,4,0,0,0,0,0,0],
+						[0,0,0,0,0,5,0,0,0,0,0],
+						[0,0,0,0,0,0,6,0,0,0,0],
+						[0,0,0,0,0,0,0,7,0,0,0],
+						[0,0,0,0,0,0,0,0,8,0,0],
+						[0,0,0,0,0,0,0,0,0,9,0],
+						[0,0,0,0,0,0,0,0,0,0,10],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],	
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0,0,0]	])
+
+
+
+			print '\n\n\n\n', simulator
+			toSend = simulator3.T
 			toSend = toSend.reshape(242)
 			
 			#add the numfings to the end of the message
 			toSend = append(toSend,numFing) 
 			
-			#build struct and send message
-			start = chr(255)
-			end = chr(254)
+			#build struct and send messa
 			message = start+struct.pack("<243B", *toSend)+end
 			ser.write(message)		
 			
@@ -161,6 +198,7 @@ def readSerial():
 		return line
 
 def main():
+	set_procname("crystalz")
 
 	listener = SampleListener()
 	controller = Leap.Controller()

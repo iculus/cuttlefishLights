@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 from subprocess import Popen, PIPE
 import os, signal
 
-def do_it():
+thisPID = []
 
-	killProcess()
+def do_it():
+	killProcess('leapd')
 
 	sudo_password = 'admin'
 	command = 'leapd'.split()
@@ -15,24 +16,23 @@ def do_it():
 	status = p.wait()
 
 	try:
-		thisPID.append( get_pid('leapd') )	
+		thisPID = get_pid('leapd')	
 	except:
 		pass
 
 
 from subprocess import check_output
-def get_pid(name):
+def get_pid(name2):
 	try:
-		return map(int,check_output(["pidof",name]).split())	
+		return map(int,check_output(["pidof",name2]).split())	
 	except:
 		return 'fail'
 
-def killProcess():
-	runningIDS = get_pid('leapd')
+def killProcess(name):
+	runningIDS = get_pid(name)
 	if len(runningIDS) > 0 and 'fail' not in runningIDS:
-		print 'kill them'
+		print 'Kill Leapd Processes'
 		for i in runningIDS:
-			print i
 			os.kill(i,signal.SIGTERM)
 	if 'fail' in runningIDS:
 		print 'all good'
