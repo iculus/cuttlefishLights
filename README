@@ -1,11 +1,16 @@
-#circleFromPython# -- main feather area 
-  Feather m0 
-  x86 or x64 
+#firmware# -- leonardo development area
+  Leonardo co processor from lattePanda
   RX from serial and input into struct
   uses struct to control circle like program
 
 #leapController# -- main leap area
   x86 or x64
+
+#circleFromPython# -- old feather area 
+  Feather m0 
+  x86 or x64 
+  RX from serial and input into struct
+  uses struct to control circle like program
 
 #circle#
   made by gavin

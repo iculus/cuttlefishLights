@@ -287,6 +287,8 @@ bool serAvail = false;
 bool closeToIt = false;
 int threshold = 100;
 int i = 0;
+int startTime = millis();
+int checkTime = millis();
 
 void loop() {
   struct Message1 msg1;
@@ -314,6 +316,8 @@ void loop() {
   //bool condition = true;
 
   if (condition) {
+    startTime = millis();
+    checkTime = millis();
     incomingByte = Serial.read();
     // accumilate enough bytes
     // look for start bytes
@@ -341,14 +345,15 @@ void loop() {
     }    
   }
   else if(not condition) {
+    checkTime = millis();
     row = random(0,rows);
     col = random(0,leds);
     sz = random(1,4+1);
     uint8_t seqLen = 22*11;
 
-    uint8_t seq[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-    
-    DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
+    if (checkTime-startTime>=1000){
+      DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
+    }
     //DrawLines( seq, seqLen, strip.Color(0,0,255), 40, 4); //onOff vals, len, color, brightness
   }
 }

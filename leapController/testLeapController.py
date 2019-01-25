@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(src_dir, LIB_DIR + arch_dir)))
 sys.path.insert(0, LIB_DIR)
 
 import Leap 
-from numpy import interp, zeros, chararray, reshape, append, array
+from numpy import interp, zeros, chararray, reshape, append, array, roll
 
 LeapRowMin = -140
 LeapRowMax = 140
@@ -29,6 +29,10 @@ LeapZMin = -50
 LeapZMax = 50
 M0ZMin = 100
 M0ZMax = 0
+
+pixelRow = pixelCol = 0
+count = 0
+maxCount = 22
 
 start = chr(255)
 end = chr(254)
@@ -55,6 +59,53 @@ def resetSim2():
 	c = chararray([M0ColMax,M0RowMin])
 	c[:] = '.'
 	return c
+def diagonalLine():
+	return array([	[4,0,0,0,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0,0,0,0],
+			[0,0,2,0,0,0,0,0,0,0,0],
+			[0,0,0,3,0,0,0,0,0,0,0],
+			[0,0,0,0,4,0,0,0,0,0,0],
+			[0,0,0,0,0,5,0,0,0,0,0],
+			[0,0,0,0,0,0,6,0,0,0,0],
+			[0,0,0,0,0,0,0,7,0,0,0],
+			[0,0,0,0,0,0,0,0,8,0,0],
+			[0,0,0,0,0,0,0,0,0,9,0],
+			[0,0,0,0,0,0,0,0,0,0,10],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],	
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0]	])
+
+def chevronLine():
+	return array([	[4,0,0,0,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0,0,0,0],
+			[0,0,2,0,0,0,0,0,0,0,0],
+			[0,0,0,3,0,0,0,0,0,0,0],
+			[0,0,0,0,4,0,0,0,0,0,0],
+			[0,0,0,0,0,5,0,0,0,0,0],
+			[0,0,0,0,0,0,6,0,0,0,0],
+			[0,0,0,0,0,0,0,7,0,0,0],
+			[0,0,0,0,0,0,0,0,8,0,0],
+			[0,0,0,0,0,0,0,0,0,9,0],
+			[0,0,0,0,0,0,0,0,0,0,10],
+			[0,0,0,0,0,0,0,0,0,9,0],
+			[0,0,0,0,0,0,0,0,8,0,0],
+			[0,0,0,0,0,0,0,7,0,0,0],
+			[0,0,0,0,0,0,6,0,0,0,0],
+			[0,0,0,0,0,5,0,0,0,0,0],	
+			[0,0,0,0,4,0,0,0,0,0,0],
+			[0,0,0,3,0,0,0,0,0,0,0],
+			[0,0,2,0,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0,0,0,0],
+			[9,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0]	])
 	
 class SampleListener(Leap.Listener):
 
@@ -104,7 +155,8 @@ class SampleListener(Leap.Listener):
 	def on_frame(self, controller):
 		simulator = resetSim()
 		simulator2 = resetSim2()
-		pixelRow = pixelCol = 0
+		simulator3 = diagonalLine()
+		simulator4 = chevronLine()
 		frame = controller.frame() 
 		extended_fingers = frame.fingers.extended()
 		hands = frame.hands
@@ -114,11 +166,6 @@ class SampleListener(Leap.Listener):
 		allFings = resetFings()
 		
 		for f in extended_fingers:
-		
-			def returnCalibratedPosition(uncalPos, sensorMin, sensorMax, lightMin, lightMax):
-				calibrated = clamp(uncalPos,sensorMin,sensorMax)
-				calibrated = int( interp(calibrated,[sensorMin,sensorMax],[lightMin,lightMax]) )
-				return calibrated
 		
 			thisRow = returnCalibratedPosition(
 				f.stabilized_tip_position[0],LeapRowMin,LeapRowMax,M0RowMin,M0RowMax)
@@ -133,7 +180,47 @@ class SampleListener(Leap.Listener):
 			if f.hand.is_right:
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)			
 		
-				
+		if numFing == 0:
+			global count
+			option = random.randrange(3)
+			option = 2
+			
+			if option == 0:
+				#update
+				count = count + 1
+				if count >= maxCount:count = 0			
+		
+				#reshape
+				simulator3=roll(simulator3, count,0)
+				print simulator3
+
+				#show
+				sendIt(simulator3, numFing)
+
+			if option == 1:
+				#update
+				count = count + 1
+				if count >= maxCount:count = 0			
+		
+				#reshape
+				simulator4=roll(simulator4, count,1)
+				print simulator4
+
+				#show
+				sendIt(simulator4, numFing)
+
+			if option == 2:
+				#update
+				count = count + 1
+				if count >= maxCount:count = 0			
+		
+				#reshape
+				simulator4=roll(simulator4, count,0)
+				print simulator4
+
+				#show
+				sendIt(simulator4, numFing)
+
 
 		if numFing !=0:
 			for fingDex, thisFing in enumerate(allFings):
@@ -142,54 +229,31 @@ class SampleListener(Leap.Listener):
 					simulator[thisFing[1]][thisFing[0]] = fingDex+1
 				elif thisFing[1]>= 22: print "condition 22"
 				elif thisFing[0]>= 11: print "condition 11"
-				'''
-				if thisFing[1] < 22 and thisFing[1] >= 0: pixelRow = thisFing[1]
-				if thisFing[1] >= 22: pixelRow = 21
-				if thisFing[1] < 0: pass
-				if thisFing[0] < 11 and thisFing[0] >= 0: pixelCol = thisFing[0]
-				if thisFing[0] >= 11: pixelCol = 10
-				if thisFing[0] < 0: pass
-				'''
+			
 				simulator[pixelRow][pixelCol] = fingDex+1
 				simulator2[pixelRow][pixelCol] = fingDex+1
 
 
-			simulator3 = array([	[0,0,0,0,0,0,0,0,0,0,0],
-						[0,1,0,0,0,0,0,0,0,0,0],
-						[0,0,2,0,0,0,0,0,0,0,0],
-						[0,0,0,3,0,0,0,0,0,0,0],
-						[0,0,0,0,4,0,0,0,0,0,0],
-						[0,0,0,0,0,5,0,0,0,0,0],
-						[0,0,0,0,0,0,6,0,0,0,0],
-						[0,0,0,0,0,0,0,7,0,0,0],
-						[0,0,0,0,0,0,0,0,8,0,0],
-						[0,0,0,0,0,0,0,0,0,9,0],
-						[0,0,0,0,0,0,0,0,0,0,10],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],	
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0],
-						[0,0,0,0,0,0,0,0,0,0,0]	])
-
-
-
 			print '\n\n\n\n', simulator
-			toSend = simulator3.T
-			toSend = toSend.reshape(242)
-			
-			#add the numfings to the end of the message
-			toSend = append(toSend,numFing) 
-			
-			#build struct and send messa
-			message = start+struct.pack("<243B", *toSend)+end
-			ser.write(message)		
-			
+					
+			sendIt(simulator, numFing)
+
+def sendIt(sim, numFings):
+	toSend = sim.T
+	toSend = toSend.reshape(242)
+
+	#add the numfings to the end of the message
+	toSend = append(toSend,numFings) 
+
+	#build struct and send messa
+	message = start+struct.pack("<243B", *toSend)+end
+	ser.write(message)
+
+def returnCalibratedPosition(uncalPos, sensorMin, sensorMax, lightMin, lightMax):
+	calibrated = clamp(uncalPos,sensorMin,sensorMax)
+	calibrated = int( interp(calibrated,[sensorMin,sensorMax],[lightMin,lightMax]) )
+	return calibrated
+
 def clamp(n, minn, maxn):
     return max(min(n, maxn), minn)
 
@@ -198,6 +262,7 @@ def readSerial():
 		return line
 
 def main():
+	count = 0
 	set_procname("crystalz")
 
 	listener = SampleListener()
@@ -213,7 +278,6 @@ def main():
 		pass
 	finally:
 		controller.remove_listener(listener)
-
 
 import serial
 
