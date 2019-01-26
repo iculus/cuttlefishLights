@@ -19,6 +19,10 @@ from calibrate import returnCalibratedPosition
 
 from numpy import interp, zeros, chararray, reshape, append, array, roll
 
+import zmq
+
+# setup area #
+#physical object dimensions
 LeapRowMin = -140
 LeapRowMax = 140
 M0RowMin = 11
@@ -36,13 +40,17 @@ pixelRow = pixelCol = 0
 count = 0
 maxCount = 22
 
-start = chr(255)
-end = chr(254)
-
-pidList = []
-
 fingerListLeft = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
 fingerListRight = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
+
+#for publishing
+port = "5556"
+# end of setup area #
+
+#start = chr(255)
+#end = chr(254)
+
+#pidList = []
 
 '''
 def set_procname(newname):
@@ -110,10 +118,12 @@ class SampleListener(Leap.Listener):
 		
 	
 	def on_frame(self, controller):
+		'''
 		simulator = resetSim()
 		simulator2 = resetSim2()
 		simulator3 = diagonalLine()
 		simulator4 = chevronLine()
+		'''
 		frame = controller.frame() 
 		extended_fingers = frame.fingers.extended()
 		hands = frame.hands
@@ -135,9 +145,16 @@ class SampleListener(Leap.Listener):
 			if f.hand.is_left:
 				allFings[f.type] = (thisRow,thisCol,thisZ)
 			if f.hand.is_right:
-				allFings[f.type+5] = (thisRow,thisCol,thisZ)			
+				allFings[f.type+5] = (thisRow,thisCol,thisZ)	
+
+		topic = random.randrange(9999,10005)
+		messagedata = int(numFing)
+		print "%d %d" % (topic, messagedata)
+		socket.send("%d %d" % (topic, messagedata))		
 		
+		'''
 		if numFing == 0:
+			
 			global count
 			option = random.randrange(3)
 			option = 2
@@ -194,29 +211,29 @@ class SampleListener(Leap.Listener):
 			#print '\n\n\n\n', simulator
 					
 			sendIt(simulator, numFing, ser)
+		'''
 
 def main():
-	count = 0
+	#init messaging
+	global socket
+	context = zmq.Context()
+	socket = context.socket(zmq.PUB)
+	socket.bind("tcp://*:%s" % port)
+	#count = 0
+
+	#init serial
 	global ser
 	ser = setupSerial()
 	#set_procname("crystalz")
 
+	#init leap
 	listener = SampleListener()
 	controller = Leap.Controller()
-
 	controller.add_listener(listener)
 
 	# Keep this process running until Enter is pressed
-	while True: pass
-	'''
-	print "Press Enter to quit..."
-	try:
-		sys.stdin.readline()
-	except KeyboardInterrupt:
+	while True: 
 		pass
-	finally:
-		controller.remove_listener(listener)
-	'''
 
 if __name__ == "__main__":
 	killProcess("leapd")
