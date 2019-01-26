@@ -4,15 +4,18 @@ from numpy import interp, zeros, chararray, reshape, append, array, roll
 start = chr(255)
 end = chr(254)
 
-def sendIt(sim, numFings, ser):
+def sendIt(sim, numFings, ser, bright):
 	toSend = sim.T
 	toSend = toSend.reshape(242)
 
 	#add the numfings to the end of the message
 	toSend = append(toSend,numFings) 
 
+	#add the brightness to the end of the message
+	toSend = append(toSend,bright)
+
 	#build struct and send messa
-	message = start+struct.pack("<243B", *toSend)+end
+	message = start+struct.pack("<244B", *toSend)+end
 	ser.write(message)
 
 def setupSerial():

@@ -14,7 +14,7 @@ import Leap
 
 from patterns import heart, dot, diagonalLine, chevronLine
 from sercoms import sendIt, setupSerial
-from procCtl import setupProcess, killProcess
+from procCtl import setupProcess, killProcess, set_procname
 from calibrate import returnCalibratedPosition
 
 from numpy import interp, zeros, chararray, reshape, append, array, roll
@@ -51,15 +51,6 @@ port = "5556"
 #end = chr(254)
 
 #pidList = []
-
-'''
-def set_procname(newname):
-	from ctypes import cdll, byref, create_string_buffer
-	libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
-	buff = create_string_buffer(len(newname)+1) #Note: One larger than the name (man prctl says that)
-	buff.value = newname                 #Null terminated string as it should be
-	libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
-'''
 
 def resetFings():
 	allFings = [(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1)]
@@ -149,7 +140,7 @@ class SampleListener(Leap.Listener):
 
 		topic = 10001
 		messagedata = int(numFing)
-		print "%d %d" % (topic, messagedata)
+		#print "%d %d" % (topic, messagedata)
 		socket.send("%d %d" % (topic, messagedata))		
 		
 		'''
@@ -224,7 +215,7 @@ def main():
 	#init serial
 	global ser
 	ser = setupSerial()
-	#set_procname("crystalz")
+	set_procname("crystalz-sense")
 
 	#init leap
 	listener = SampleListener()

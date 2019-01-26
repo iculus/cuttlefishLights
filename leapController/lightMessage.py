@@ -7,9 +7,9 @@ sys.path.insert(0,'/home/admin/Desktop/cuttlefishLights/leapController/')
 sys.path.insert(1,'/usr/lib/python2.7')
 import subprocess
 
-from patterns import heart, dot, diagonalLine, chevronLine
+from patterns import heart, dot, diagonalLine, chevronLine, patternOne
 from sercoms import sendIt, setupSerial
-from procCtl import setupProcess
+from procCtl import setupProcess, set_procname
 
 import zmq
 import threading
@@ -43,7 +43,7 @@ class listenThread(threading.Thread):
 if __name__ == "__main__":
 	# setup area #
 	ser = setupSerial()
-	simulator2 = chevronLine()
+	simulator2 = chevronLine(False)
 	simulator3 = diagonalLine()
 	simulator4 = dot(5,9,4)
 	simulator5 = heart(4)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 	currentTime = lastTime = time.time()
 	delay = 0
 	worked = True
-
+	set_procname("crystalz-light")
 	#setupProcess("leapd", "sudo leapd &")
 
 	#pusubsetup
@@ -73,7 +73,8 @@ if __name__ == "__main__":
 	lThread.start()
 
 	#body of program
-	while time.time()-timeStart < 100:
+	while True:
+	#while time.time()-timeStart < 10:
 		if not worked:
 			#update
 			count = count + 1
@@ -95,23 +96,15 @@ if __name__ == "__main__":
 			if (currentTime - lastTime) > delay:
 				finger = str(lThread).split(',')[1]
 				finger = int(finger)
-				#flips and copies
-				simulator1=fliplr(simulator2)
-				#sets color
-				simulator2=where(simulator2 == 0, simulator2,finger+1)
-				simulator1=where(simulator1 == 0, simulator2,7)
-				#moves
-				simulator2=roll(simulator2, 1,1)
-				#merges
-				newSim=where(simulator2 != 0, simulator2,simulator1)
-				#simulator1=roll(simulator1, 1,1)
+				
+				newSim, simulator2 = patternOne(simulator2,finger+1,8)
 				
 				lastTime = currentTime
-				count = count + 1
-				if count >= maxCount:count = 0			
+				#count = count + 1
+				#if count >= maxCount:count = 0			
 
 			#show
-			sendIt(newSim, numFing, ser)
+			sendIt(newSim, numFing, ser, 120)
 
 	#end threads
 	lThread.join()
