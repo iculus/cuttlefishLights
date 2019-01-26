@@ -36,6 +36,7 @@ class listenThread(threading.Thread):
 		threading.Thread.join(self, timeout)
 
 	def __str__(self):
+		""" info to send back to main process """
 		return str(self.topic) + ',' + str(self.messagedata)
 
 
@@ -72,7 +73,7 @@ if __name__ == "__main__":
 	lThread.start()
 
 	#body of program
-	while time.time()-timeStart < 20:
+	while time.time()-timeStart < 100:
 		if not worked:
 			#update
 			count = count + 1
@@ -98,12 +99,12 @@ if __name__ == "__main__":
 				simulator1=fliplr(simulator2)
 				#sets color
 				simulator2=where(simulator2 == 0, simulator2,finger+1)
-				simulator1=where(simulator1 == 0, simulator2,5)
-				#merges
-				newSim=where(simulator2 != 0, simulator2,simulator1)
+				simulator1=where(simulator1 == 0, simulator2,7)
 				#moves
 				simulator2=roll(simulator2, 1,1)
-				simulator1=roll(simulator1, 1,1)
+				#merges
+				newSim=where(simulator2 != 0, simulator2,simulator1)
+				#simulator1=roll(simulator1, 1,1)
 				
 				lastTime = currentTime
 				count = count + 1

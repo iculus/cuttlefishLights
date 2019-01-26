@@ -147,7 +147,7 @@ class SampleListener(Leap.Listener):
 			if f.hand.is_right:
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)	
 
-		topic = random.randrange(9999,10005)
+		topic = 10001
 		messagedata = int(numFing)
 		print "%d %d" % (topic, messagedata)
 		socket.send("%d %d" % (topic, messagedata))		
