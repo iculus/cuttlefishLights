@@ -28,4 +28,3 @@ def setupSerial():
 		ser.close()
 		ser.open()
 	return ser
-
