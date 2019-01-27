@@ -280,6 +280,7 @@ struct Message1 {
   uint8_t bit240;
   uint8_t bit241;
   uint8_t bit242;
+  uint8_t bit243;
 } __packed__;
 static const size_t MSG_LEN = sizeof(struct Message1);
 
@@ -352,6 +353,7 @@ void loop() {
     uint8_t seqLen = 22*11;
 
     if (checkTime-startTime>=1000){
+      startTime = checkTime - 1000; //to prevent overflow condition
       DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
     }
     //DrawLines( seq, seqLen, strip.Color(0,0,255), 40, 4); //onOff vals, len, color, brightness
@@ -430,6 +432,8 @@ void handleMessage(struct Message1 msg1){
 
   uint8_t numFing = msg1.bit242;
 
+  uint8_t brights = msg1.bit243;
+
   int seq[] = {  msg1.bit0,  msg1.bit1,  msg1.bit2,  msg1.bit3,  msg1.bit4,  msg1.bit5,  msg1.bit6,  msg1.bit7,  msg1.bit8,  msg1.bit9,  msg1.bit10, msg1.bit11, msg1.bit12, msg1.bit13, msg1.bit14, msg1.bit15, msg1.bit16, msg1.bit17, msg1.bit18, msg1.bit19, msg1.bit20, msg1.bit21,
       msg1.bit22, msg1.bit23, msg1.bit24, msg1.bit25, msg1.bit26, msg1.bit27, msg1.bit28, msg1.bit29, msg1.bit30, msg1.bit31, msg1.bit32, msg1.bit33, msg1.bit34, msg1.bit35, msg1.bit36, msg1.bit37, msg1.bit38, msg1.bit39, msg1.bit40, msg1.bit41, msg1.bit42, msg1.bit43,
       msg1.bit44, msg1.bit45, msg1.bit46, msg1.bit47, msg1.bit48, msg1.bit49, msg1.bit50, msg1.bit51, msg1.bit52, msg1.bit53, msg1.bit54, msg1.bit55, msg1.bit56, msg1.bit57, msg1.bit58, msg1.bit59, msg1.bit60, msg1.bit61, msg1.bit62, msg1.bit63, msg1.bit64, msg1.bit65,
@@ -461,7 +465,7 @@ void handleMessage(struct Message1 msg1){
   //DrawCircle(row,col,0,1,sz); // row,col,color,wait,size(1=small,4=large)
   //DrawDot(row,col,finger,1,255,numFingers); // row,col,color,wait,brightness
 
-  DrawLines( seq, seqLen, strip.Color(0,0,255), 40, numFing); //onOff vals, len, color, brightness
+  DrawLines( seq, seqLen, strip.Color(0,0,255), brights, numFing); //onOff vals, len, color, brightness
 
 }
 
