@@ -130,7 +130,7 @@ if __name__ == "__main__":
 		
 
 			#show
-			sendIt(newSim, numFing, ser, 50)
+			sendIt(newSim, numFing, ser, 100)
 
 	#end threads
 	lThread.join()

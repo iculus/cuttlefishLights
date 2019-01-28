@@ -48,7 +48,7 @@ W = "WHITE = (255,255,255)"
 W2 = "WHITE2 = (255,255,255)"
 
 
-colors = [R,O,Y,G,T,B,PB,F,P,W,W2]
+colors = [R,O,Y,G,T,B,F,P,W,W2]
 
 if not printHeader:
 	print "#define leds 22"
@@ -101,11 +101,11 @@ def binExponentY(localMax,exp,num):
 	return Ys
 
 for color in colors:
-	exp = 2
+	exp = 3
 	a,b,c,name = split(color)
-	A = binExponentY(int(a),2,num)
-	B = binExponentY(int(b),2,num)
-	C = binExponentY(int(c),2,num)
+	A = binExponentY(int(a),exp,num)
+	B = binExponentY(int(b),exp,num)
+	C = binExponentY(int(c),exp,num)
 	#print a,b,c,name, A,B,C
 	for index in range(num):
 		st = 'uint32_t ' + name +'_'+ str(index) + ' = strip.Color('+str(A[index])+\

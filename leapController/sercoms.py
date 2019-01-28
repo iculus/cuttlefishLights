@@ -1,8 +1,15 @@
-import serial, struct
+import serial, struct, sys
 from numpy import interp, zeros, chararray, reshape, append, array, roll
+sys.path.insert(1,'/usr/lib/python2.7')
+import subprocess
 
 start = chr(255)
 end = chr(254)
+
+def startProcess():
+	p = subprocess.Popen(['./findDevicePath.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd="/home/admin/Desktop/cuttlefishLights/utils")
+	out, err = p.communicate()
+	return out
 
 def sendIt(sim, numFings, ser, bright):
 	toSend = sim.T
@@ -27,7 +34,13 @@ def setupSerial():
 	try: ser = serial.Serial(port = '/dev/ttyACM1', baudrate = 9600,timeout = 0)
 	except: pass
 	'''
-	ser = serial.Serial(port = '/dev/ttyACM1', baudrate = 9600,timeout = 0)
+
+	result = startProcess()
+	if "Leonardo" in result: 
+		dev,name = result.split('-')
+
+	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 9600,timeout = 0)
+
 	try:
 		print 'Serial Port Open'
 		if(ser.isOpen() == False):
