@@ -72,6 +72,8 @@ if __name__ == "__main__":
 	lThread = listenThread()
 	lThread.start()
 
+	count = 0
+
 	#body of program
 	while True:
 	#while time.time()-timeStart < 10:
@@ -98,12 +100,14 @@ if __name__ == "__main__":
 				finger = str(lThread).split(',')[1]
 				finger = int(finger)
 				
-				newSim, simulator2 = patternOne(simulator2,finger+1,8)
+				newSim, simulator2 = patternOne(simulator2,33,15)
 				
 				lastTime = currentTime
 				#count = count + 1
 				#if count >= maxCount:count = 0	
 			'''
+
+			count = count + 1;
 			newSim = array([[10,11,12,13,14,15,16,17,18,19,0],
 				[20,21,22,23,24,25,26,27,28,29,0],
 				[30,31,32,33,34,35,36,37,38,39,0],
@@ -126,7 +130,9 @@ if __name__ == "__main__":
 				[0,0,0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,0,0,0],
 				[0,0,0,0,0,0,0,0,0,0,0]])
-
+			
+			newSim = roll(newSim,0,1)
+			
 		
 
 			#show
