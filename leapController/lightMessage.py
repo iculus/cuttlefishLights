@@ -95,7 +95,7 @@ if __name__ == "__main__":
 		if worked:
 			#update
 			currentTime = time.time()
-			'''
+			
 			if (currentTime - lastTime) > delay:
 				finger = str(lThread).split(',')[1]
 				finger = int(finger)
@@ -132,6 +132,7 @@ if __name__ == "__main__":
 				[0,0,0,0,0,0,0,0,0,0,0]])
 			
 			newSim = roll(newSim,0,1)
+			'''
 			
 		
 

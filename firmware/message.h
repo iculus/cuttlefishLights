@@ -1,5 +1,3 @@
-int incomingByte = 0;    // for incoming serial data
-
 struct Message1 {
   uint8_t bit0;
   uint8_t bit1;

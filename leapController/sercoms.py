@@ -26,14 +26,6 @@ def sendIt(sim, numFings, ser, bright):
 	ser.write(message)
 
 def setupSerial():
-	'''
-	try: ser = serial.Serial(port = '/dev/ttyACM2', baudrate = 9600,timeout = 0)
-	except: pass
-	try: ser = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600,timeout = 0)
-	except: pass
-	try: ser = serial.Serial(port = '/dev/ttyACM1', baudrate = 9600,timeout = 0)
-	except: pass
-	'''
 
 	result = startProcess()
 	if "Leonardo" in result: 
@@ -42,7 +34,8 @@ def setupSerial():
 	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 9600,timeout = 0)
 
 	try:
-		print 'Serial Port Open'
+		if(ser.isOpen() != False):
+			print 'Serial Port Open'
 		if(ser.isOpen() == False):
 			ser.open()
 			print 'its not open'

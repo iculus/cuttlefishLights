@@ -43,7 +43,9 @@ int i = 0;
 int startTime = millis();
 int checkTime = millis();
 
+
 void loop() {
+  Serial.println("HELP");
   struct Message1 msg1;
   static char payload[MSG_LEN];
   static size_t num_payload_chars = MSG_LEN + 1;
@@ -65,10 +67,13 @@ void loop() {
   if (average > threshold )    {closeToIt = false;}
   if (average <= threshold )   {closeToIt = true;}
 
+  int incomingByte = 0;    // for incoming serial data
+
   bool condition = serAvail;
-  //bool condition = true;
+  //bool condition = false;
 
   if (condition) {
+    Serial.println("CONDITION");
     startTime = millis();
     checkTime = millis();
     incomingByte = Serial.read();
@@ -76,11 +81,13 @@ void loop() {
     // look for start bytes
     // 
     // pull out the payload
-  
+
+    
     if (num_payload_chars == MSG_LEN + 1) {
       if (incomingByte == 255) {
         num_payload_chars = 0;
       }
+  
     } else if (num_payload_chars < MSG_LEN) {
       payload[num_payload_chars] = incomingByte;
       num_payload_chars++;
@@ -95,7 +102,9 @@ void loop() {
       }
     } else {
       //assert(false);
-    }    
+    }  
+    
+    //DrawCircle(6,6,0,0,1); // row,col,color,wait,size(1=small,4=large) 
   }
   else if(not condition) {
     checkTime = millis();
@@ -105,10 +114,14 @@ void loop() {
     uint8_t seqLen = 22*11;
 
     if (checkTime-startTime>=1000){
-      startTime = checkTime - 1000; //to prevent overflow condition
-      DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
+      Serial.print(startTime);
+      Serial.print('\t');
+      Serial.print(checkTime);
+      Serial.print('\t');
+      Serial.print(checkTime-startTime);
+      Serial.print('\n');
+      DrawCircle(row,col,0,0,3); // row,col,color,wait,size(1=small,4=large)
     }
-    //DrawLines( seq, seqLen, strip.Color(0,0,255), 40, 4); //onOff vals, len, color, brightness
   }
 }
 
@@ -124,14 +137,7 @@ uint8_t ZIG(uint8_t in, uint8_t width){
 
 void DrawLines (int sequence[], uint8_t arLen, uint32_t color, uint8_t brightness, uint8_t nums){
   for (int i = 0; i < arLen; i++){
-    /*
-    int j = 0; 
-    int maths = i/22;
-    if(maths%2){
-      j = 21+(22*maths) - (i-(22*maths));
-    }
-    else {j = i;}
-    */
+    
     uint8_t j = ZIG(i,22);
     
     if (sequence[i] > 0){
@@ -156,9 +162,7 @@ void DrawLines (int sequence[], uint8_t arLen, uint32_t color, uint8_t brightnes
 void handleMessage(struct Message1 msg1){
 
   uint8_t seqLen = 22*11;
-
   uint8_t numFing = msg1.bit242;
-
   uint8_t brights = msg1.bit243;
 
   int seq[] = {  msg1.bit0,  msg1.bit1,  msg1.bit2,  msg1.bit3,  msg1.bit4,  msg1.bit5,  msg1.bit6,  msg1.bit7,  msg1.bit8,  msg1.bit9,  msg1.bit10, msg1.bit11, msg1.bit12, msg1.bit13, msg1.bit14, msg1.bit15, msg1.bit16, msg1.bit17, msg1.bit18, msg1.bit19, msg1.bit20, msg1.bit21,
@@ -172,25 +176,6 @@ void handleMessage(struct Message1 msg1){
       msg1.bit176,  msg1.bit177,  msg1.bit178,  msg1.bit179,  msg1.bit180,  msg1.bit181,  msg1.bit182,  msg1.bit183,  msg1.bit184,  msg1.bit185,  msg1.bit186,  msg1.bit187,  msg1.bit188,  msg1.bit189,  msg1.bit190,  msg1.bit191,  msg1.bit192,  msg1.bit193,  msg1.bit194,  msg1.bit195,  msg1.bit196,  msg1.bit197,
       msg1.bit198,  msg1.bit199,  msg1.bit200,  msg1.bit201,  msg1.bit202,  msg1.bit203,  msg1.bit204,  msg1.bit205,  msg1.bit206,  msg1.bit207,  msg1.bit208,  msg1.bit209,  msg1.bit210,  msg1.bit211,  msg1.bit212,  msg1.bit213,  msg1.bit214,  msg1.bit215,  msg1.bit216,  msg1.bit217,  msg1.bit218,  msg1.bit219,
       msg1.bit220,  msg1.bit221,  msg1.bit222,  msg1.bit223,  msg1.bit224,  msg1.bit225,  msg1.bit226,  msg1.bit227,  msg1.bit228,  msg1.bit229,  msg1.bit230,  msg1.bit231,  msg1.bit232,  msg1.bit233,  msg1.bit234,  msg1.bit235,  msg1.bit236,  msg1.bit237,  msg1.bit238,  msg1.bit239,  msg1.bit240,  msg1.bit241};
-  //Serial.println(msg1, DEC)
-  //Serial.print(msg1.a, DEC);
-  //Serial.print(msg1.b, DEC);
-  //Serial.print(msg1.c, DEC);
-  //Serial.println(msg1.d, DEC);
-  //Serial.print(msg1.e,DEC);
-  //row = random(0,rows);
-  //col = random(0,leds);
-  //sz = random(1,4+1);
-  //sz = 1;
-  //row = int(msg1.a);
-  //col = int(msg1.b);
-  //finger = int(msg1.c);
-  //numFingers = int(msg1.e);
-
-  //Serial.print(numFingers);
-
-  //DrawCircle(row,col,0,1,sz); // row,col,color,wait,size(1=small,4=large)
-  //DrawDot(row,col,finger,1,255,numFingers); // row,col,color,wait,brightness
 
   DrawLines( seq, seqLen, strip.Color(0,0,255), brights, numFing); //onOff vals, len, color, brightness
 
@@ -261,15 +246,15 @@ void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16
   static int yy1[] = {0};
   
   for (int b = 0; b <= 100; b++) {
-    /*
+    
     if (condition >= 4) {addressShape(xx4,yy4,row,col,ARRAY_LEN(xx4),strip.Color(0,1*(50-abs(50-b)),1*(50-abs(50-b))));}
     if (condition >= 3) {addressShape(xx3,yy3,row,col,ARRAY_LEN(xx3),strip.Color(0,0,2*(50-abs(50-b))));}
     if (condition >= 2) {addressShape(xx2,yy2,row,col,ARRAY_LEN(xx2),strip.Color(0,1*(50-abs(50-b)),0));}
-    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),YELLOW);}
+    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),YELLOW_9);}
     strip.setBrightness( 255/50 * (50-abs(50-b)) ); //sets the triangle
     strip.show();
     delay(wait);
-    */
+    
   }
 }
 

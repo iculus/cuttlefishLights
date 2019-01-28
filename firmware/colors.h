@@ -6,6 +6,17 @@ uint32_t thisColor;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(leds*rows, PIN, NEO_RGB + NEO_KHZ800);
 
+uint32_t RED = strip.Color(0,255,0);
+uint32_t ORANGE = strip.Color(100,255,0);
+uint32_t YELLOW = strip.Color(255,255,0);
+uint32_t GREEN = strip.Color(255,0,0);
+uint32_t TEAL = strip.Color(255,0,255);
+uint32_t BLUE = strip.Color(0,0,255);
+uint32_t FUCHA = strip.Color(0,255,100);
+uint32_t PURPLE = strip.Color(0,170,255);
+uint32_t WHITE = strip.Color(255,255,255);
+uint32_t OFF = strip.Color(0,0,0);
+
 uint32_t RED_0 = strip.Color(0,0,0);
 uint32_t RED_1 = strip.Color(0,0,0);
 uint32_t RED_2 = strip.Color(0,2,0);
