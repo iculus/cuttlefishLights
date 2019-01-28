@@ -112,8 +112,6 @@ void loop() {
   }
 }
 
-uint32_t thisColor;
-
 uint8_t ZIG(uint8_t in, uint8_t width){
   int j = 0; 
   int maths = in/width;
@@ -137,17 +135,7 @@ void DrawLines (int sequence[], uint8_t arLen, uint32_t color, uint8_t brightnes
     uint8_t j = ZIG(i,22);
     
     if (sequence[i] > 0){
-      if (sequence[i] == 0){thisColor = OFF;}
-      if (sequence[i] == 1){thisColor = PURPLE;}
-      if (sequence[i] == 2){thisColor = GREEN;}
-      if (sequence[i] == 3){thisColor = TEAL;}
-      if (sequence[i] == 4){thisColor = RED;}
-      if (sequence[i] == 5){thisColor = YELLOW;}
-      if (sequence[i] == 6){thisColor = FUCHA;}
-      if (sequence[i] == 7){thisColor = BLUE;}
-      if (sequence[i] == 8){thisColor = ORANGE;}
-      if (sequence[i] == 9){thisColor = WHITE;}
-      if (sequence[i] == 10){thisColor = NEW;}
+      uint32_t thisColor = picker(sequence[i]);
       strip.setPixelColor(j, thisColor);
     }
   }
@@ -273,6 +261,7 @@ void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16
   static int yy1[] = {0};
   
   for (int b = 0; b <= 100; b++) {
+    /*
     if (condition >= 4) {addressShape(xx4,yy4,row,col,ARRAY_LEN(xx4),strip.Color(0,1*(50-abs(50-b)),1*(50-abs(50-b))));}
     if (condition >= 3) {addressShape(xx3,yy3,row,col,ARRAY_LEN(xx3),strip.Color(0,0,2*(50-abs(50-b))));}
     if (condition >= 2) {addressShape(xx2,yy2,row,col,ARRAY_LEN(xx2),strip.Color(0,1*(50-abs(50-b)),0));}
@@ -280,13 +269,14 @@ void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16
     strip.setBrightness( 255/50 * (50-abs(50-b)) ); //sets the triangle
     strip.show();
     delay(wait);
+    */
   }
 }
 
 void DrawDot(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t brightness, uint8_t numFingers) {
   static int xx1[] = {0};
   static int yy1[] = {0};
-
+  /*
   if (numFingers == 1) {thisColor = FUCHA;}
   if (numFingers == 5) {thisColor = PURPLE;}
   if (numFingers == 3) {thisColor = BLUE;}
@@ -294,7 +284,7 @@ void DrawDot(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t 
   if (numFingers == 2) {thisColor = OFF;}
   if (numFingers == 6) {thisColor = GREEN;}
   if (numFingers == 7) {thisColor = YELLOW;}
-  
+  */
   addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),thisColor);
   strip.setBrightness(brightness);
   strip.show();
