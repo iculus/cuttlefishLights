@@ -112,5 +112,6 @@ def patternOne (simulator2,c1,c2):
 	simulator2=roll(simulator2, 1,1)
 	#merges
 	newSim=where(simulator2 != 0, simulator2,simulator1)
-	#simulator1=roll(simulator1, 1,1)
+	simulator1=roll(simulator1, 1,1)
 	return newSim, simulator2
+
