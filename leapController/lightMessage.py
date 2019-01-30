@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 import os, signal, sys, inspect, thread, time, random, struct
-from numpy import interp, zeros, chararray, reshape, append, array, roll, fliplr, where
+from numpy import interp, zeros, chararray, reshape, append, array, roll, fliplr, where, add
 
 sys.path.insert(0,'/home/admin/Desktop/cuttlefishLights/leapController/')
 sys.path.insert(1,'/usr/lib/python2.7')
 import subprocess
 
-from patterns import heart, dot, diagonalLine, chevronLine, patternOne
+from patterns import *
 from sercoms import sendIt, setupSerial
 from procCtl import setupProcess, set_procname
 
@@ -48,13 +48,24 @@ if __name__ == "__main__":
 	simulator3 = diagonalLine()
 	simulator4 = dot(5,9,4)
 	simulator5 = heart(4)
+	simulator6 = makeSaw(76)
 	count = 0
 	maxCount = 22
 	numFing = 0
-	currentTime = lastTime = time.time()
-	delay = 0.5
+	currentTime = lastTimeDelay = lastTimeMode = time.time()
+	delay = 0.0
+	modeDelay = 4
 	worked = True
 	set_procname("crystalz-light")
+	maxMode = 15
+	oneMode = False
+	thisMode = 13
+	mode = thisMode
+	state = 0
+	switch = 1
+	state2 = 0
+	bright = 0
+	sign = 1
 	#setupProcess("leapd", "sudo leapd &")
 
 	#pusubsetup
@@ -95,52 +106,60 @@ if __name__ == "__main__":
 
 		if worked:
 			#update
+			fade = False
 			currentTime = time.time()
 			
-			if (currentTime - lastTime) > delay:
+			if (currentTime - lastTimeMode) > modeDelay:
+				if oneMode: mode = thisMode
+				if not oneMode: mode += 1;
+				if mode > maxMode: mode = 0
+				lastTimeMode = currentTime
+			
+			if (currentTime - lastTimeDelay) > delay:
 				finger = str(lThread).split(',')[1]
 				finger = int(finger)
 				
-				newSim, simulator2 = patternOne(simulator2,52,62)
-				
-				lastTime = currentTime
-				#count = count + 1
-				#if count >= maxCount:count = 0	
-			'''
+				if mode == 0: 
+					newSim,count = patternZero(newSim,count)
+					fade = True
+				if mode == 1: newSim, simulator2 = patternOne(simulator2,35,65)
+				if mode == 2: newSim, simulator2 = patternTwo(simulator2,32,65)
+				if mode == 3: newSim, simulator2 = patternThree(simulator2,35,65)
+				if mode == 4: newSim, simulator2 = patternFour(simulator2,32,65)
+				if mode == 5: newSim, simulator2 = patternFive(simulator2)
+				if mode == 6: newSim, simulator2 = patternSix(simulator2,32,65)
+				if mode == 7: newSim, simulator2 = patternFour(simulator2,32,65)
+				if mode == 8: newSim, simulator2 = patternEight(simulator2,33,64)
+				if mode == 9: newSim, state, switch = patternNine(state,34, switch)
+				if mode == 10:newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+				if mode == 11:
+					newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+					newSim =  where(simulator5!=0,simulator5,newSim)
+				if mode == 12:
+					newSim, state, switch = patternNine(state,34, switch)
+					newSim =  where(simulator5!=0,simulator5,newSim)
+				if mode == 13:
+					newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+					newSim =  where(simulator5==0,simulator5,newSim)
+				if mode == 14:
+					newSim, state, switch = patternNine(state,34, switch)
+					newSim =  where(simulator5==0,simulator5,newSim)
+				if mode == 15:
+					fade = True
+					newSim = simulator5
 
-			count = count + 1;
-			newSim = array([[0,0,0,12,13,14,15,16,0,0,0],
-					[0,0,0,22,23,24,25,26,0,0,0],
-					[0,0,0,32,33,34,35,36,0,0,0],
-					[0,0,0,42,43,44,45,46,0,0,0],
-					[0,0,0,52,53,54,55,56,0,0,0],
-					[0,0,0,62,63,64,65,66,0,0,0],
-					[0,0,0,72,73,74,75,76,0,0,0],
-					[0,0,0,82,83,84,85,86,0,0,0],
-					[0,0,0,92,93,94,95,96,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0,0]])
-			'''
-
-
-			
-			#newSim = roll(newSim,count,1)
-			
-		
+				lastTimeDelay = currentTime
+	
 
 			#show
-			sendIt(newSim, numFing, ser, 255)
+			if fade:
+				if bright == 0: sign = 1
+				sendIt(newSim, numFing, ser, bright)
+				bright = bright+(7*sign)
+				if bright >= 245:
+					sign = -1
+			if not fade:
+				sendIt(newSim, numFing, ser, 100)
 
 	#end threads
 	lThread.join()
