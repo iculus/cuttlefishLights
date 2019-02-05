@@ -139,9 +139,9 @@ class SampleListener(Leap.Listener):
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)	
 
 		topic = 10001
-		messagedata = int(numFing)
-		#print "%d %d" % (topic, messagedata)
-		socket.send("%d %d" % (topic, messagedata))		
+		messagedata = ":" + str(allFings) + ":" + str(numFing)
+		#print "%d %s" % (topic, messagedata)
+		socket.send("%d %s" % (topic, messagedata))		
 		
 		'''
 		if numFing == 0:

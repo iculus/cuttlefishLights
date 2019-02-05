@@ -12,6 +12,7 @@ def startProcess():
 	return out
 
 def sendIt(sim, numFings, ser, bright):
+	#print ser.read()
 	toSend = sim.T
 	toSend = toSend.reshape(242)
 
@@ -31,7 +32,7 @@ def setupSerial():
 	if "Leonardo" in result: 
 		dev,name = result.split('-')
 
-	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 9600,timeout = 0)
+	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 115200,timeout = 0)
 
 	try:
 		if(ser.isOpen() != False):

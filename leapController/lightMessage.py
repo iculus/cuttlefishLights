@@ -28,7 +28,7 @@ class listenThread(threading.Thread):
 		""" main control loop """
 		while not self._stopevent.isSet(  ):
 			string = socket.recv()
-			self.topic, self.messagedata = string.split()
+			self.messagedata = string
 
 	def join(self, timeout=None):
 		""" Stop the thread. """
@@ -37,7 +37,7 @@ class listenThread(threading.Thread):
 
 	def __str__(self):
 		""" info to send back to main process """
-		return str(self.topic) + ',' + str(self.messagedata)
+		return str(self.messagedata)
 
 
 if __name__ == "__main__":
@@ -54,18 +54,19 @@ if __name__ == "__main__":
 	numFing = 0
 	currentTime = lastTimeDelay = lastTimeMode = time.time()
 	delay = 0.0
-	modeDelay = 4
+	modeDelay = 8
 	worked = True
 	set_procname("crystalz-light")
 	maxMode = 15
 	oneMode = False
-	thisMode = 13
+	thisMode = 1
 	mode = thisMode
 	state = 0
 	switch = 1
 	state2 = 0
 	bright = 0
 	sign = 1
+	demo = True
 	#setupProcess("leapd", "sudo leapd &")
 
 	#pusubsetup
@@ -108,6 +109,16 @@ if __name__ == "__main__":
 			#update
 			fade = False
 			currentTime = time.time()
+
+
+			try:print lThread.replace(" ", "")
+			except: pass
+
+			finger = 0
+			numFing = 0
+
+			if finger == 0: demo = True
+			if finger > 0: demo = False
 			
 			if (currentTime - lastTimeMode) > modeDelay:
 				if oneMode: mode = thisMode
@@ -115,14 +126,13 @@ if __name__ == "__main__":
 				if mode > maxMode: mode = 0
 				lastTimeMode = currentTime
 			
-			if (currentTime - lastTimeDelay) > delay:
-				finger = str(lThread).split(',')[1]
-				finger = int(finger)
+			if (currentTime - lastTimeDelay) > delay and demo:
 				
 				if mode == 0: 
 					newSim,count = patternZero(newSim,count)
-					fade = True
-				if mode == 1: newSim, simulator2 = patternOne(simulator2,35,65)
+					fade = False
+				if mode == 1: 
+					newSim, simulator2 = patternOne(simulator2,35,65)
 				if mode == 2: newSim, simulator2 = patternTwo(simulator2,32,65)
 				if mode == 3: newSim, simulator2 = patternThree(simulator2,35,65)
 				if mode == 4: newSim, simulator2 = patternFour(simulator2,32,65)
@@ -149,17 +159,24 @@ if __name__ == "__main__":
 					newSim = simulator5
 
 				lastTimeDelay = currentTime
+
+			if (currentTime - lastTimeDelay) > delay and not demo:
+				color = (finger*10) + 6
+				#print color
+				newSim, state, switch = patternNine(state,color, switch)
+				lastTimeDelay = currentTime
 	
 
 			#show
 			if fade:
+				step = 1
 				if bright == 0: sign = 1
 				sendIt(newSim, numFing, ser, bright)
-				bright = bright+(7*sign)
-				if bright >= 245:
+				bright = bright+(step*sign)
+				if bright >= 255-step+1:
 					sign = -1
 			if not fade:
-				sendIt(newSim, numFing, ser, 100)
+				sendIt(newSim, numFing, ser, 255)
 
 	#end threads
 	lThread.join()
