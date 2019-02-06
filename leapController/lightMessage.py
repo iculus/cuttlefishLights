@@ -20,8 +20,8 @@ class listenThread(threading.Thread):
 		""" constructor, setting initial variables """
 		self._stopevent = threading.Event(  )
 		self._sleepperiod = 1.0
-		self.topic = 0
-		self.messagedata = 0
+		self.topic = "NONE"
+		self.messagedata = "NONE"
 		threading.Thread.__init__(self, name=name)
 
 	def run(self):
@@ -49,6 +49,7 @@ if __name__ == "__main__":
 	simulator4 = dot(5,9,4)
 	simulator5 = heart(4)
 	simulator6 = makeSaw(76)
+
 	count = 0
 	maxCount = 22
 	numFing = 0
@@ -109,16 +110,32 @@ if __name__ == "__main__":
 			#update
 			fade = False
 			currentTime = time.time()
+			
+			fingerUpdate = False
+			fingerTopic = 0
+			fingerPos = 0,0
+			fingerNum = 0
 
+			fingInfo = str(lThread).replace(" ", "")
+			if fingInfo != "NONE": 
+				fingerTopic, fingerPos, fingerNum = fingInfo.split(":")
+				fingerPos = fingerPos.strip('[').strip(']').split('),(')
 
-			try:print lThread.replace(" ", "")
-			except: pass
+			if len(fingerPos) > 2:
+				for index,fing in enumerate(fingerPos):
+					x,y,z = fing.strip('(').strip(')').split(',')
+					thisFing = (int(x), int(y), int(z))
+					#print index,thisFing
+					fingerPos[index] = thisFing
+				fingerUpdate = True
+	
+			
+			fingerNum = int(fingerNum)
+			
 
-			finger = 0
-			numFing = 0
-
-			if finger == 0: demo = True
-			if finger > 0: demo = False
+			if fingerNum == 0: demo = True
+			if fingerNum > 0 and not fingerUpdate: demo = True			
+			if fingerNum > 0 and fingerUpdate: demo = False
 			
 			if (currentTime - lastTimeMode) > modeDelay:
 				if oneMode: mode = thisMode
@@ -161,9 +178,19 @@ if __name__ == "__main__":
 				lastTimeDelay = currentTime
 
 			if (currentTime - lastTimeDelay) > delay and not demo:
-				color = (finger*10) + 6
-				#print color
-				newSim, state, switch = patternNine(state,color, switch)
+				#print fingerPos
+				newSim = dot(0,0,0)
+				print fingerNum	  
+				for index, info in enumerate(fingerPos):
+					color = (index*10) + 6
+					if info[1] >= 0 and info[0] >= 0:
+						if info[0] < 11 and info[1] < 22:
+							#print info[0],info[1],color
+							thisMatrix = dot(info[1],info[0],color)
+							newSim = where(newSim != 0, newSim, thisMatrix)
+				#print newSim, '\n'
+				fingerNum = 5
+				#newSim, state, switch = patternNine(state,color, switch)
 				lastTimeDelay = currentTime
 	
 
@@ -171,12 +198,12 @@ if __name__ == "__main__":
 			if fade:
 				step = 1
 				if bright == 0: sign = 1
-				sendIt(newSim, numFing, ser, bright)
+				sendIt(newSim, fingerNum, ser, bright)
 				bright = bright+(step*sign)
 				if bright >= 255-step+1:
 					sign = -1
 			if not fade:
-				sendIt(newSim, numFing, ser, 255)
+				sendIt(newSim, fingerNum, ser, 255)
 
 	#end threads
 	lThread.join()
