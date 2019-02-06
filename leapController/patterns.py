@@ -293,8 +293,10 @@ def patternSix (start,c1,c2):
 	
 	return newSim, start
 
-def patternZero(newSim,count = 0, count2=0):
-	#count = count - 1
+def patternZero(newSim,count, count2=0):
+	#count = count + 1
+	#count = count * 2
+	if count > 10000000: count = 0
 	import random
 	#count = random.randrange(12)
 	#count2 = random.randrange(12)
@@ -313,19 +315,19 @@ def patternZero(newSim,count = 0, count2=0):
 			[0,0,0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0,0,0],
-			[0,0,0,12,13,14,15,16,0,0,0],
-			[0,0,0,22,23,24,25,26,0,0,0],
-			[0,0,0,32,33,34,35,36,0,0,0],
-			[0,0,0,42,43,44,45,46,0,0,0],
-			[0,0,0,52,53,54,55,56,0,0,0],
-			[0,0,0,62,63,64,65,66,0,0,0],
-			[0,0,0,72,73,74,75,76,0,0,0],
-			[0,0,0,82,83,84,85,86,0,0,0],
-			[0,0,0,92,93,94,95,96,0,0,0]])
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0]])
 
 	
 	newSim = roll(newSim,count,1)
-	newSim = roll(newSim,count2,0)
+	newSim = roll(newSim,count,0)
 	return newSim, count
 
 def patternEight (start,c1,c2):

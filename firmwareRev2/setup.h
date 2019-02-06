@@ -1,5 +1,9 @@
 #define ultrasonic A1
 #define slider A0
+#define button A2
+#define cpuPower A5
+#define interrupt 4
+#define colorLED 5
 
 uint16_t row = 0;
 uint16_t col = 0;
@@ -19,6 +23,8 @@ bool serAvail = false;
 bool closeToIt = false;
 uint8_t threshold = 100;
 uint8_t i = 0;
+
+bool cpuOn = false;
 
 unsigned long startTime = millis();
 unsigned long checkTime = millis();

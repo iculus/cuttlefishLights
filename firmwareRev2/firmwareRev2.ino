@@ -1,7 +1,4 @@
 #include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
 #include "setup.h"
 #include "message.h"
@@ -11,7 +8,15 @@
 
 
 void setup() {
-  Serial.begin(9600);
+
+  pinMode(ultrasonic, INPUT);
+  pinMode(slider, INPUT);
+  pinMode(button, INPUT);
+  pinMode(cpuPower, INPUT);
+
+  digitalWrite(colorLED, LOW);
+  
+  Serial.begin(115200);
   
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
@@ -25,7 +30,11 @@ void loop() {
   struct Message1 msg1;
   static char payload[MSG_LEN];
   static size_t num_payload_chars = MSG_LEN + 1;
+  
+  int sliderReading = analogRead(slider);
+  int mappedSliderReading = map(sliderReading,0,1024,0,255);
 
+  
   total = total - readings[readIndex];
   readings[readIndex] = analogRead(ultrasonic);
   total = total + readings[readIndex];
@@ -34,6 +43,8 @@ void loop() {
   if (readIndex >= numReadings){
     readIndex = 0;
   }
+
+  //uint8_t cpuVolts = analogRead(cpuPower);
 
   average = total/numReadings;
   //Serial.println(average);
@@ -47,6 +58,7 @@ void loop() {
   //bool condition = true;
 
   if (condition) {
+    
     incomingByte = Serial.read();
     // accumilate enough bytes
     // look for start bytes
@@ -56,6 +68,11 @@ void loop() {
     if (num_payload_chars == MSG_LEN + 1) {
       if (incomingByte == 255) {
         num_payload_chars = 0;
+//        noInterrupts();
+//        Serial.print("done\n");
+//        Serial.flush();
+//        Serial.println(Serial.availableForWrite());
+//        interrupts();
       }
     } else if (num_payload_chars < MSG_LEN) {
       payload[num_payload_chars] = incomingByte;
@@ -64,7 +81,7 @@ void loop() {
       if (incomingByte == 254) {
         //process message
         memcpy(&msg1, payload, sizeof(msg1));
-        handleMessage(msg1);
+        handleMessage(msg1,mappedSliderReading);
         num_payload_chars = MSG_LEN + 1;
       } else {
         num_payload_chars = MSG_LEN + 1;  // invalid packet, drop data
@@ -85,10 +102,12 @@ void loop() {
   }
 }
 
-void handleMessage(struct Message1 msg1){
+void handleMessage(struct Message1 msg1, int mappedSliderReading){
 
   uint8_t numFing = msg1.bit242;
   uint8_t brights = msg1.bit243;
+
+  brights = map (brights,0,255,0,mappedSliderReading);
 
   int seq[] = {  msg1.bit0,  msg1.bit1,  msg1.bit2,  msg1.bit3,  msg1.bit4,  msg1.bit5,  msg1.bit6,  msg1.bit7,  msg1.bit8,  msg1.bit9,  msg1.bit10, msg1.bit11, msg1.bit12, msg1.bit13, msg1.bit14, msg1.bit15, msg1.bit16, msg1.bit17, msg1.bit18, msg1.bit19, msg1.bit20, msg1.bit21,
       msg1.bit22, msg1.bit23, msg1.bit24, msg1.bit25, msg1.bit26, msg1.bit27, msg1.bit28, msg1.bit29, msg1.bit30, msg1.bit31, msg1.bit32, msg1.bit33, msg1.bit34, msg1.bit35, msg1.bit36, msg1.bit37, msg1.bit38, msg1.bit39, msg1.bit40, msg1.bit41, msg1.bit42, msg1.bit43,

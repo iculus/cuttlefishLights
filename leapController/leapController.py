@@ -19,7 +19,7 @@ from calibrate import returnCalibratedPosition
 
 from numpy import interp, zeros, chararray, reshape, append, array, roll
 
-import zmq
+from sockets import *
 
 # setup area #
 #physical object dimensions
@@ -40,17 +40,8 @@ pixelRow = pixelCol = 0
 count = 0
 maxCount = 22
 
-fingerListLeft = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
-fingerListRight = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
-
-#for publishing
-port = "5556"
-# end of setup area #
-
-#start = chr(255)
-#end = chr(254)
-
-#pidList = []
+#fingerListLeft = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
+#fingerListRight = [(0,0,0),(0,0,0),(0,0,0),(0,0,0),(0,0,0)]
 
 def resetFings():
 	allFings = [(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1),(-1,-1,-1)]
@@ -109,22 +100,16 @@ class SampleListener(Leap.Listener):
 		
 	
 	def on_frame(self, controller):
-		'''
-		simulator = resetSim()
-		simulator2 = resetSim2()
-		simulator3 = diagonalLine()
-		simulator4 = chevronLine()
-		'''
+
 		frame = controller.frame() 
 		extended_fingers = frame.fingers.extended()
 		hands = frame.hands
 		
 		numFing = len(extended_fingers)
-		
+				
+		#returns a list of all finger tip positions 
 		allFings = resetFings()
-		
 		for f in extended_fingers:
-		
 			thisRow = returnCalibratedPosition(
 				f.stabilized_tip_position[0],LeapRowMin,LeapRowMax,M0RowMin,M0RowMax)
 			thisCol = returnCalibratedPosition(
@@ -137,80 +122,17 @@ class SampleListener(Leap.Listener):
 				allFings[f.type] = (thisRow,thisCol,thisZ)
 			if f.hand.is_right:
 				allFings[f.type+5] = (thisRow,thisCol,thisZ)	
-
+	
+		#send message here on ZM0
 		topic = 10001
 		messagedata = ":" + str(allFings) + ":" + str(numFing)
-		#print "%d %s" % (topic, messagedata)
-		socket.send("%d %s" % (topic, messagedata))		
-		
-		'''
-		if numFing == 0:
-			
-			global count
-			option = random.randrange(3)
-			option = 2
-			
-			if option == 0:
-				#update
-				count = count + 1
-				if count >= maxCount:count = 0			
-		
-				#reshape
-				simulator3=roll(simulator3, count,0)
-				#print simulator3
-
-				#show
-				sendIt(simulator3, numFing, ser)
-
-			if option == 1:
-				#update
-				count = count + 1
-				if count >= maxCount:count = 0			
-		
-				#reshape
-				simulator4=roll(simulator4, count,1)
-				#print simulator4
-
-				#show
-				sendIt(simulator4, numFing, ser)
-
-			if option == 2:
-				#update
-				count = count + 1
-				if count >= maxCount:count = 0			
-		
-				#reshape
-				simulator4=roll(simulator4, count,0)
-				#print simulator4
-
-				#show
-				sendIt(simulator4, numFing, ser)
-
-
-		if numFing !=0:
-			for fingDex, thisFing in enumerate(allFings):
-				
-				if thisFing[1]<22 and thisFing[1]>=0 and thisFing[0]<11 and thisFing[0]>=0:
-					simulator[thisFing[1]][thisFing[0]] = fingDex+1
-				elif thisFing[1]>= 22: print "condition 22"
-				elif thisFing[0]>= 11: print "condition 11"
-			
-				simulator[pixelRow][pixelCol] = fingDex+1
-				simulator2[pixelRow][pixelCol] = fingDex+1
-
-
-			#print '\n\n\n\n', simulator
-					
-			sendIt(simulator, numFing, ser)
-		'''
+		socketA.send("%d %s" % (topic, messagedata))		
 
 def main():
-	#init messaging
-	global socket
-	context = zmq.Context()
-	socket = context.socket(zmq.PUB)
-	socket.bind("tcp://*:%s" % port)
-	#count = 0
+	#set up socket for sending on ZM0
+	port = "5556"
+	global socketA
+	socketA = init(port)
 
 	#init serial
 	global ser
