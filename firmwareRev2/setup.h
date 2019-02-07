@@ -1,6 +1,6 @@
 #define ultrasonic A1
 #define slider A0
-#define button A2
+#define buttonPin A2
 #define cpuPower A5
 #define interrupt 4
 #define colorLED 5

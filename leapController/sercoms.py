@@ -2,6 +2,7 @@ import serial, struct, sys
 from numpy import interp, zeros, chararray, reshape, append, array, roll
 sys.path.insert(1,'/usr/lib/python2.7')
 import subprocess
+from time import sleep
 
 start = chr(255)
 end = chr(254)
@@ -12,6 +13,7 @@ def startProcess():
 	return out
 
 def sendIt(sim, numFings, ser, bright):
+	ranger = volts = button = 0
 	#print ser.read()
 	toSend = sim.T
 	toSend = toSend.reshape(242)
@@ -26,12 +28,29 @@ def sendIt(sim, numFings, ser, bright):
 	message = start+struct.pack("<244B", *toSend)+end
 	ser.write(message)
 
+	#read incoming message
+	inp = ser.readline()
+    	vals = str(inp.decode("utf-8")).split(',')
+	try:
+		ranger = vals[0]
+		volts = vals[1]
+		button = vals[2]
+	except: pass
+    	sleep(1./120)
+	return ranger, volts, button
+
 def setupSerial():
 
 	result = startProcess()
-	if "Leonardo" in result: 
-		dev,name = result.split('-')
-
+	if "Leonardo" in result:
+		res = result.split('\n')
+		for i in res:
+			if "Leonardo" in i:
+				dev,name = i.split('-')
+			if "Feather" in i:
+				dev2,name2 = i.split('-')
+	print dev, name, dev2, name2
+	
 	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 115200,timeout = 0)
 
 	try:

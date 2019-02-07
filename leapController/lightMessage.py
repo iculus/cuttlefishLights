@@ -13,36 +13,6 @@ from procCtl import setupProcess, set_procname
 
 from sockets import *
 
-'''
-import zmq
-import threading
-
-class listenThread(threading.Thread):
-
-	def __init__(self, name='listenThread'):
-		""" constructor, setting initial variables """
-		self._stopevent = threading.Event(  )
-		self._sleepperiod = 1.0
-		self.topic = "NONE"
-		self.messagedata = "NONE"
-		threading.Thread.__init__(self, name=name)
-
-	def run(self):
-		""" main control loop """
-		while not self._stopevent.isSet(  ):
-			string = socket.recv()
-			self.messagedata = string
-
-	def join(self, timeout=None):
-		""" Stop the thread. """
-		self._stopevent.set(  )
-		threading.Thread.join(self, timeout)
-
-	def __str__(self):
-		""" info to send back to main process """
-		return str(self.messagedata)
-'''
-
 if __name__ == "__main__":
 	# setup area #
 	ser = setupSerial()
@@ -52,6 +22,7 @@ if __name__ == "__main__":
 	simulator4 = dot(5,9,4)
 	simulator5 = heart(4)
 	simulator6 = makeSaw(76)
+	ranger=volts=button = 0
 
 	count = 0
 	maxCount = 22
@@ -109,138 +80,124 @@ if __name__ == "__main__":
 
 	#body of program
 	while True:
-	#while time.time()-timeStart < 10:
-		if not worked:
-			#update
-			count = count + 1
-			if count >= maxCount:count = 0			
 
-			#reshape
-			currentTime = time.time()
-			if (currentTime - lastTime) > delay:
-				simulator3=roll(simulator3, count,0)
-				lastTime = currentTime
-			#print simulator3
+		print ranger, volts, button
 
-			#show
-			sendIt(simulator3, numFing, ser)
+		#update
+		currentTime = time.time()
 
-		if worked:
-			#update
-			currentTime = time.time()
+		
+		#get fingers info			
+		fingerUpdate = False
+		fingerTopic = 0
+		fingerPos = 0,0
+		fingerNum = 0
 
+		fingInfo = str(lThreadA).replace(" ", "")
+		if fingInfo != "NONE": 
+			fingerTopic, fingerPos, fingerNum = fingInfo.split(":")
+			fingerPos = fingerPos.strip('[').strip(']').split('),(')
+
+		if len(fingerPos) > 2:
+			for index,fing in enumerate(fingerPos):
+				x,y,z = fing.strip('(').strip(')').split(',')
+				thisFing = (int(x), int(y), int(z))
+				#print index,thisFing
+				fingerPos[index] = thisFing
+			fingerUpdate = True
+
+		fingerNum = int(fingerNum)
+		#have finger info
+		
+
+		if fingerNum == 0: demo = True
+		if fingerNum > 0 and not fingerUpdate: demo = True			
+		if fingerNum > 0 and fingerUpdate: demo = False
+		
+		if (currentTime - lastTimeMode) > modeDelay:
+			if oneMode: mode = thisMode
+			if not oneMode: mode += 1;
+			if mode > maxMode: mode = 0
+			lastTimeMode = currentTime
+		#print mode
+		
+		if (currentTime - lastTimeDelay) > delay and demo:
 			
-			#get fingers info			
-			fingerUpdate = False
-			fingerTopic = 0
-			fingerPos = 0,0
-			fingerNum = 0
+			if justSawFingers == True:
+				newSim = roll(newSim,-1,0)
+				fade = True
+				if currentTime-decayTimeStart > 10:
+					justSawFingers = False
 
-			fingInfo = str(lThreadA).replace(" ", "")
-			if fingInfo != "NONE": 
-				fingerTopic, fingerPos, fingerNum = fingInfo.split(":")
-				fingerPos = fingerPos.strip('[').strip(']').split('),(')
-
-			if len(fingerPos) > 2:
-				for index,fing in enumerate(fingerPos):
-					x,y,z = fing.strip('(').strip(')').split(',')
-					thisFing = (int(x), int(y), int(z))
-					#print index,thisFing
-					fingerPos[index] = thisFing
-				fingerUpdate = True
-	
-			fingerNum = int(fingerNum)
-			#have finger info
-			
-
-			if fingerNum == 0: demo = True
-			if fingerNum > 0 and not fingerUpdate: demo = True			
-			if fingerNum > 0 and fingerUpdate: demo = False
-			
-			if (currentTime - lastTimeMode) > modeDelay:
-				if oneMode: mode = thisMode
-				if not oneMode: mode += 1;
-				if mode > maxMode: mode = 0
-				lastTimeMode = currentTime
-			#print mode
-			
-			if (currentTime - lastTimeDelay) > delay and demo:
+			if justSawFingers == False:
 				
-				if justSawFingers == True:
-					newSim = roll(newSim,-1,0)
+				if mode == 0: 
+					newSim,count = patternZero(newSim,count)
 					fade = True
-					if currentTime-decayTimeStart > 10:
-						justSawFingers = False
+					#delay = 1
+				if mode == 1: 
+					newSim, simulator2 = patternOne(simulator2,35,65)
+				if mode == 2: newSim, simulator2 = patternTwo(simulator2,32,65)
+				if mode == 3: newSim, simulator2 = patternThree(simulator2,35,65)
+				if mode == 4: newSim, simulator2 = patternFour(simulator2,32,65)
+				if mode == 5: newSim, simulator2 = patternFive(simulator2)
+				if mode == 6: newSim, simulator2 = patternSix(simulator2,32,65)
+				if mode == 7: newSim, simulator2 = patternFour(simulator2,32,65)
+				if mode == 8: newSim, simulator2 = patternEight(simulator2,33,64)
+				if mode == 9: newSim, state, switch = patternNine(state,34, switch)
+				if mode == 10:newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+				if mode == 11:
+					newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+					newSim =  where(simulator5!=0,simulator5,newSim)
+				if mode == 12:
+					newSim, state, switch = patternNine(state,34, switch)
+					newSim =  where(simulator5!=0,simulator5,newSim)
+				if mode == 13:
+					newSim, simulator6, state2 = patternTen(simulator6,state2,44)
+					newSim =  where(simulator5==0,simulator5,newSim)
+				if mode == 14:
+					newSim, state, switch = patternNine(state,34, switch)
+					newSim =  where(simulator5==0,simulator5,newSim)
+				if mode == 15:
+					fade = True
+					newSim = simulator5
 
-				if justSawFingers == False:
-					
-					if mode == 0: 
-						newSim,count = patternZero(newSim,count)
-						fade = True
-						#delay = 1
-					if mode == 1: 
-						newSim, simulator2 = patternOne(simulator2,35,65)
-					if mode == 2: newSim, simulator2 = patternTwo(simulator2,32,65)
-					if mode == 3: newSim, simulator2 = patternThree(simulator2,35,65)
-					if mode == 4: newSim, simulator2 = patternFour(simulator2,32,65)
-					if mode == 5: newSim, simulator2 = patternFive(simulator2)
-					if mode == 6: newSim, simulator2 = patternSix(simulator2,32,65)
-					if mode == 7: newSim, simulator2 = patternFour(simulator2,32,65)
-					if mode == 8: newSim, simulator2 = patternEight(simulator2,33,64)
-					if mode == 9: newSim, state, switch = patternNine(state,34, switch)
-					if mode == 10:newSim, simulator6, state2 = patternTen(simulator6,state2,44)
-					if mode == 11:
-						newSim, simulator6, state2 = patternTen(simulator6,state2,44)
-						newSim =  where(simulator5!=0,simulator5,newSim)
-					if mode == 12:
-						newSim, state, switch = patternNine(state,34, switch)
-						newSim =  where(simulator5!=0,simulator5,newSim)
-					if mode == 13:
-						newSim, simulator6, state2 = patternTen(simulator6,state2,44)
-						newSim =  where(simulator5==0,simulator5,newSim)
-					if mode == 14:
-						newSim, state, switch = patternNine(state,34, switch)
-						newSim =  where(simulator5==0,simulator5,newSim)
-					if mode == 15:
-						fade = True
-						newSim = simulator5
+			lastTimeDelay = currentTime
 
-				lastTimeDelay = currentTime
+		if (currentTime - lastTimeDelay) > delay and not demo:
+			fade = False
+			delay = 0
+			justSawFingers = True
+			decayTimeStart = time.time()
+			#print fingerPos
+			newSim = dot(0,0,0)
+			#print fingerNum	  
+			for index, info in enumerate(fingerPos):
+				color = (index*10) + 6
+				if info[1] >= 0 and info[0] >= 0:
+					if info[0] < 11 and info[1] < 22:
+						#print info[0],info[1],color
+						thisMatrix = dot(info[1],info[0],color)
+						newSim = where(newSim != 0, newSim, thisMatrix)
+			#print newSim, '\n'
+			fingerNum = 5
+			#newSim, state, switch = patternNine(state,color, switch)
+			lastTimeDelay = currentTime
 
-			if (currentTime - lastTimeDelay) > delay and not demo:
-				fade = False
-				delay = 0
-				justSawFingers = True
-				decayTimeStart = time.time()
-				#print fingerPos
-				newSim = dot(0,0,0)
-				#print fingerNum	  
-				for index, info in enumerate(fingerPos):
-					color = (index*10) + 6
-					if info[1] >= 0 and info[0] >= 0:
-						if info[0] < 11 and info[1] < 22:
-							#print info[0],info[1],color
-							thisMatrix = dot(info[1],info[0],color)
-							newSim = where(newSim != 0, newSim, thisMatrix)
-				#print newSim, '\n'
-				fingerNum = 5
-				#newSim, state, switch = patternNine(state,color, switch)
-				lastTimeDelay = currentTime
-	
 
-			#show
-			if fade:
-				#fingerNum = 5
-				step = 5
-				if bright == 0: sign = 1; count = count+12; justSawFingers = False
-				print bright
-				sendIt(newSim, fingerNum, ser, bright)
-				bright = bright+(step*sign)
-				if bright >= 255-step+1:
-					sign = -1
-			if not fade:
-				print "here"
-				sendIt(newSim, fingerNum, ser, 255)
+		#show
+		if fade:
+			#fingerNum = 5
+			step = 5
+			if bright == 0: sign = 1; count = count+12; justSawFingers = False
+			print bright
+			ranger, volts, button = sendIt(newSim, fingerNum, ser, bright)
+			bright = bright+(step*sign)
+			if bright >= 255-step+1:
+				sign = -1
+		if not fade:
+			print "here"
+			ranger, volts, button = sendIt(newSim, fingerNum, ser, 255)
 
 	#end threads
 	lThreadA.join()

@@ -5,16 +5,20 @@
 #include "colors.h"
 #include "display.h"
 
+//for button
+int ledState = HIGH;         // the current state of the output pin
+int buttonState;             // the current reading from the input pin
+int lastButtonState = LOW;   // the previous reading from the input pin
 
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 void setup() {
 
   pinMode(ultrasonic, INPUT);
   pinMode(slider, INPUT);
-  pinMode(button, INPUT);
+  pinMode(buttonPin, INPUT);
   pinMode(cpuPower, INPUT);
-
-  digitalWrite(colorLED, LOW);
   
   Serial.begin(115200);
   
@@ -27,12 +31,21 @@ void setup() {
 }
 
 void loop() {
+  //button
+  int reading = digitalRead(buttonPin);
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();} // reset the debouncing timer
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;}}
+  lastButtonState = reading;
+  
   struct Message1 msg1;
   static char payload[MSG_LEN];
   static size_t num_payload_chars = MSG_LEN + 1;
   
   int sliderReading = analogRead(slider);
-  int mappedSliderReading = map(sliderReading,0,1024,0,255);
+  int mappedSliderReading = map(sliderReading,0,1024,255,0);
 
   
   total = total - readings[readIndex];
@@ -44,7 +57,7 @@ void loop() {
     readIndex = 0;
   }
 
-  //uint8_t cpuVolts = analogRead(cpuPower);
+  uint8_t cpuVolts = analogRead(cpuPower);
 
   average = total/numReadings;
   //Serial.println(average);
@@ -68,11 +81,6 @@ void loop() {
     if (num_payload_chars == MSG_LEN + 1) {
       if (incomingByte == 255) {
         num_payload_chars = 0;
-//        noInterrupts();
-//        Serial.print("done\n");
-//        Serial.flush();
-//        Serial.println(Serial.availableForWrite());
-//        interrupts();
       }
     } else if (num_payload_chars < MSG_LEN) {
       payload[num_payload_chars] = incomingByte;
@@ -82,6 +90,12 @@ void loop() {
         //process message
         memcpy(&msg1, payload, sizeof(msg1));
         handleMessage(msg1,mappedSliderReading);
+        Serial.print(average);
+        Serial.print(',');
+        Serial.print(cpuVolts);
+        Serial.print(',');
+        Serial.print(buttonState);
+        Serial.print(',');
         num_payload_chars = MSG_LEN + 1;
       } else {
         num_payload_chars = MSG_LEN + 1;  // invalid packet, drop data
@@ -95,9 +109,14 @@ void loop() {
     row = random(0,rows);
     col = random(0,leds);
     sz = random(1,4+1);
-
+    
     if (checkTime-startTime>=1000){
-      DrawCircle(row,col,0,0,sz); // row,col,color,wait,size(1=small,4=large)
+      if (cpuVolts > 120){
+        DrawCircle(row,col,0,0,sz, YELLOW_6); // row,col,color,wait,size(1=small,4=large)
+      }
+      if (cpuVolts <= 120){
+        DrawCircle(row,col,0,0,1,GREEN_6); // row,col,color,wait,size(1=small,4=large)
+      }
     }
   }
 }
@@ -165,7 +184,7 @@ void SetPixelMatrix(uint16_t row, uint16_t col, uint32_t c) {
 
 #define ARRAY_LEN(a)    (sizeof(a) / sizeof(a[0]))
 
-void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t condition) {
+void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t condition, uint32_t colr) {
   static int xx4[] = {-3,-3,-2,-1,0,1,2,3,3,3,2,1,0,-1,-2,-3};
   static int yy4[] = {0,1,2,3,3,3,2,1,0,-1,-2,-3,-3,-3,-2,-1};
   static int xx3[] = {-1,0,1,2,2,2,1,0,-1,-2,-2,-2};
@@ -179,7 +198,7 @@ void DrawCircle(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16
     if (condition >= 4) {addressShape(xx4,yy4,row,col,ARRAY_LEN(xx4),strip.Color(0,1*(50-abs(50-b)),1*(50-abs(50-b))));}
     if (condition >= 3) {addressShape(xx3,yy3,row,col,ARRAY_LEN(xx3),strip.Color(0,0,2*(50-abs(50-b))));}
     if (condition >= 2) {addressShape(xx2,yy2,row,col,ARRAY_LEN(xx2),strip.Color(0,1*(50-abs(50-b)),0));}
-    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),YELLOW_6);}
+    if (condition >= 1) {addressShape(xx1,yy1,row,col,ARRAY_LEN(xx1),colr);}
     strip.setBrightness( 255/50 * (50-abs(50-b)) ); //sets the triangle
     strip.show();
     delay(wait);
