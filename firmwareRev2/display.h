@@ -1,6 +1,6 @@
 uint8_t ZIG(uint8_t in, uint8_t width){
-  int j = 0; 
-  int maths = in/width;
+  uint8_t j = 0; 
+  uint8_t maths = in/width;
   if(maths%2){
     j = (width-1)+(width*maths) - (in-(width*maths));
   }
@@ -10,7 +10,7 @@ uint8_t ZIG(uint8_t in, uint8_t width){
 
 void DrawLines (int sequence[], uint8_t arLen, uint32_t color, uint8_t brightness, uint8_t nums){
 
-  for (int i = 0; i < arLen; i++){
+  for (uint8_t i = 0; i < arLen; i++){
     uint8_t j = ZIG(i,22);
     
     if (sequence[i] > 0){

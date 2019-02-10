@@ -1,38 +1,51 @@
 #include <Adafruit_NeoPixel.h>
 
+//#include <Wire.h>
+//#include <VL53L0X.h>
+//VL53L0X sensor;
+
 #include "setup.h"
 #include "message.h"
 #include "colors.h"
 #include "display.h"
 
 //for button
-int ledState = HIGH;         // the current state of the output pin
-int buttonState;             // the current reading from the input pin
-int lastButtonState = LOW;   // the previous reading from the input pin
+//int ledState = HIGH;         // the current state of the output pin
+uint8_t buttonState;             // the current reading from the input pin
+uint8_t lastButtonState = LOW;   // the previous reading from the input pin
 
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 void setup() {
 
-  pinMode(ultrasonic, INPUT);
+  //pinMode(ultrasonic, INPUT);
   pinMode(slider, INPUT);
   pinMode(buttonPin, INPUT);
   pinMode(cpuPower, INPUT);
   
   Serial.begin(115200);
+
+  while (! Serial) {
+    delay(1);
+  }
+
+  //Wire.begin();
+  //sensor.init();
+  //sensor.setTimeout(500);
+  //sensor.startContinuous();
   
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 
-  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
-    readings[thisReading] = 0;
-  }
+//  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+//    readings[thisReading] = 0;
+//  }
 }
 
 void loop() {
   //button
-  int reading = digitalRead(buttonPin);
+  uint8_t reading = digitalRead(buttonPin);
   if (reading != lastButtonState) {
     lastDebounceTime = millis();} // reset the debouncing timer
   if ((millis() - lastDebounceTime) > debounceDelay) {
@@ -47,25 +60,13 @@ void loop() {
   int sliderReading = analogRead(slider);
   int mappedSliderReading = map(sliderReading,0,1024,255,0);
 
-  
-  total = total - readings[readIndex];
-  readings[readIndex] = analogRead(ultrasonic);
-  total = total + readings[readIndex];
-  readIndex = readIndex +1;
-
-  if (readIndex >= numReadings){
-    readIndex = 0;
-  }
+  uint16_t distance = 0;
+  //int distance = sensor.readRangeContinuousMillimeters();
 
   uint8_t cpuVolts = analogRead(cpuPower);
 
-  average = total/numReadings;
-  //Serial.println(average);
-
   if (Serial.available() > 0)  {serAvail = true;}
   if (Serial.available() == 0) {serAvail = false;}
-  if (average > threshold )    {closeToIt = false;}
-  if (average <= threshold )   {closeToIt = true;}
 
   bool condition = serAvail;
   //bool condition = true;
@@ -90,12 +91,11 @@ void loop() {
         //process message
         memcpy(&msg1, payload, sizeof(msg1));
         handleMessage(msg1,mappedSliderReading);
-        Serial.print(average);
+        Serial.print(distance);
         Serial.print(',');
         Serial.print(cpuVolts);
         Serial.print(',');
         Serial.print(buttonState);
-        Serial.print(',');
         num_payload_chars = MSG_LEN + 1;
       } else {
         num_payload_chars = MSG_LEN + 1;  // invalid packet, drop data
@@ -146,6 +146,7 @@ void handleMessage(struct Message1 msg1, int mappedSliderReading){
 
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
+/*
 uint32_t Wheel(byte WheelPos) {
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
@@ -158,6 +159,7 @@ uint32_t Wheel(byte WheelPos) {
   WheelPos -= 170;
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
+*/
 
 uint16_t Wrap(uint16_t n, uint16_t len) {
   return ((n % len) + len) % len;
@@ -224,8 +226,8 @@ void DrawDot(uint16_t row, uint16_t col, uint32_t color, uint8_t wait, uint16_t 
   delay(wait);
 }
 
-void addressShape(int* xArray, int* yArray, uint16_t thisrow, uint16_t thiscol, uint16_t arraylen,uint32_t c){
-  for (int dot=0; dot < arraylen; dot++) {
+void addressShape(int* xArray, int* yArray, uint8_t thisrow, uint8_t thiscol, uint8_t arraylen,uint32_t c){
+  for (uint8_t dot=0; dot < arraylen; dot++) {
     if ((xArray[dot]+thisrow)>=0 && (yArray[dot]+thiscol)>=0 && (xArray[dot]+thisrow)<rows && (yArray[dot]+thiscol)<leds) {
       SetPixelMatrix(xArray[dot]+thisrow,yArray[dot]+thiscol, c);
     }

@@ -122,10 +122,12 @@ uint32_t picker(int value){
   if (value == 84) {thisColor = PURPLE_4;}
   if (value == 85) {thisColor = PURPLE_5;}
   if (value == 86) {thisColor = PURPLE_6;}
+  /*
   if (value == 92) {thisColor = WHITE_2;}
   if (value == 93) {thisColor = WHITE_3;}
   if (value == 94) {thisColor = WHITE_4;}
   if (value == 95) {thisColor = WHITE_5;}
   if (value == 96) {thisColor = WHITE_6;}
   if (value > 96) {thisColor = WHITE_6;}
+  */
   return thisColor;}

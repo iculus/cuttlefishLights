@@ -1,4 +1,4 @@
-#define ultrasonic A1
+//#define ultrasonic A1
 #define slider A0
 #define buttonPin A2
 #define cpuPower A5
@@ -11,17 +11,17 @@ uint16_t sz = 0;
 uint16_t finger = 0;
 uint8_t numFingers = 0;
 
-const int numReadings = 6;
-uint8_t readings[numReadings];
-uint8_t readIndex = 0;
-uint8_t total = 0;
-uint8_t average = 0;
+//const int numReadings = 6;
+//uint8_t readings[numReadings];
+//uint8_t readIndex = 0;
+//uint8_t total = 0;
+//uint8_t average = 0;
 
 uint8_t incomingByte = 0;    // for incoming serial data
 
 bool serAvail = false;
-bool closeToIt = false;
-uint8_t threshold = 100;
+//bool closeToIt = false;
+//uint8_t threshold = 100;
 uint8_t i = 0;
 
 bool cpuOn = false;
