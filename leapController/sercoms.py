@@ -12,7 +12,7 @@ def startProcess():
 	out, err = p.communicate()
 	return out
 
-def sendIt(sim, numFings, ser, bright):
+def sendIt(sim, numFings, ser, ser2, bright):
 	ranger = volts = button = 0
 	#print ser.read()
 	toSend = sim.T
@@ -30,9 +30,15 @@ def sendIt(sim, numFings, ser, bright):
 
 	#read incoming message
 	inp = ser.readline()
+	inp2 = ser2.readline()
     	vals = str(inp.decode("utf-8")).split(',')
+	vals2 = str(inp2.decode("utf-8"))
+	#print vals, inp2
 	try:
-		ranger = vals[0]
+		ranger = int(float(vals2))
+	except:
+		ranger = 8190
+	try:
 		volts = vals[1]
 		button = vals[2]
 	except: pass
@@ -52,6 +58,7 @@ def setupSerial():
 	print dev, name, dev2, name2
 	
 	ser = serial.Serial(port = str(dev.strip(' ')), baudrate = 115200,timeout = 0)
+	ser2 = serial.Serial(port = str(dev2.strip(' ')), baudrate = 115200,timeout = 0)
 
 	try:
 		if(ser.isOpen() != False):
@@ -63,4 +70,4 @@ def setupSerial():
 		print 'error'
 		ser.close()
 		ser.open()
-	return ser
+	return ser, ser2
