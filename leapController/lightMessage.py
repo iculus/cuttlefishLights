@@ -34,7 +34,7 @@ if __name__ == "__main__":
 	
 	#mode setup
 	delay = 0.0
-	modeDelay = 12
+	modeDelay = 120
 	maxMode = 18
 	oneMode = False
 	thisMode = 18
@@ -195,9 +195,31 @@ if __name__ == "__main__":
 		modes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
 		numModes = len(modes)
 
-		skipList = [18,15,]
-		favList = [11,16,0]
+		#skipList = []
+		skipList = [18,15,3]
 
+		agro = [3,18]
+
+		heart = [10,15]
+
+		calm = [0,14,12.9]
+
+		alien = [12,4]
+
+		water = [6,1]		
+
+		favList = [11,13,16,0,5,8,17]
+
+		boring = [2]
+
+		happy = False
+		angry = False
+		bored = False
+
+		if happy: modes = favList+water+calm+heart
+		if angry: modes = favList+agro+alien+water
+		if bored: modes = water+alien
+		
 		#update mode
 		modeDelay = 1
 		if (currentTime - lastTimeMode) > modeDelay:
@@ -215,10 +237,12 @@ if __name__ == "__main__":
 			selector = random.randrange(len(favList))
 			mode = favList[selector]
 		
+		
+		#print modes, numModes, selector
 
-		print modes, numModes, selector
+#		mode = 5
 
-		#print mode
+		print mode
 
 		def diags(xVal, yVal,color, newSim):
 			for i,valI in enumerate(xVal):
@@ -315,18 +339,18 @@ if __name__ == "__main__":
 				if mode == 3: newSim, simulator2 = patternThree(simulator2,15,65)
 				#green stripe on blue
 				if mode == 4: 
-					newSim, simulator2 = patternFour(simulator2,32,65)
+					newSim, simulator2,count = patternFour(simulator2,32,65,count)
 					fade = False
 				#yellow with blue chevron
 				if mode == 5: 
-					newSim, simulator2 = patternFive(simulator2)
+					newSim, simulator2 = patternFive(simulator2,54,64,34,2)
 					fade = False
 				#very blue
 				if mode == 6: newSim, simulator2 = patternSix(simulator2,33,66)
 				#very purp
 				if mode == 12: newSim, simulator2 = patternSix(simulator2,33,76)
-				#green stripe on blue
-				if mode == 7: newSim, simulator2 = patternFour(simulator2,34,65)
+				#blue red chevron
+				if mode == 7: newSim, simulator2,count = patternFour(simulator2,24,65,count)
 				#2 chevrons peach and purp
 				if mode == 8: newSim, simulator2 = patternEight(simulator2,76,26)
 				

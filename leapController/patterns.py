@@ -102,7 +102,7 @@ def chevronLine(fill=True):
 			[9,0,0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0,0,P]	])
 
-def patternAdd(arrayToAdd):
+def patternAdd(arrayToAdd,count):
 	addArray = array([[0,0,0,0,0,2,0,0,0,0,0],
 			[0,0,0,0,0,2,0,0,0,0,0],
 			[0,0,0,0,0,2,0,0,0,0,0],
@@ -125,6 +125,7 @@ def patternAdd(arrayToAdd):
 			[0,0,0,0,0,2,0,0,0,0,0],
 			[0,0,0,0,0,2,0,0,0,0,0],
 			[0,0,0,0,0,2,0,0,0,0,0]	])
+	addArray = roll(addArray,count,1)
 
 	return add(addArray,arrayToAdd)
 
@@ -188,7 +189,7 @@ def patternThree (start,c1,c2):
 	
 	return newSim, copy
 
-def patternFour (start,c1,c2):
+def patternFour (start,c1,c2,count=0):
 	#flips and copies
 	copy=fliplr(start)
 
@@ -202,11 +203,14 @@ def patternFour (start,c1,c2):
 	#moves
 	start=roll(start, 1,1)
 
-	newSim = patternAdd(newSim)
+	newSim = patternAdd(newSim,count*count)
 	
-	return newSim, start
+	#can move it here
+	count=count
+	
+	return newSim, start,count
 
-def patternFive (start,c1=54,c2=64, c3=34):
+def patternFive (start,c1=54,c2=64, c3=34, x=2):
 	#flips and copies
 	copy=fliplr(start)
 
@@ -219,8 +223,6 @@ def patternFive (start,c1=54,c2=64, c3=34):
 	
 	#moves
 	start=roll(start, 1,1)
-
-	x = 2
 
 	addArray = array([[0,0,0,0,0,x,0,0,0,0,0],
 		[0,0,0,0,0,x,0,0,0,0,0],
